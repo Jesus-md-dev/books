@@ -2,18 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-main {
-  margin: 2% 10% 0 10%;
+main{
+ margin-top: 2%;
+}
+
+header, .footer {
+  background-color: #9fd1a6;
+  background-image: linear-gradient(45deg, #9fd1a6 75%, #d6efda 100%);
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  height: 100vh;
+  background-color: #ffffff;
+  background-image: linear-gradient(180deg, #ffffff 90%, #e3ffe3 100%);
 }
 
 @layer utilities {

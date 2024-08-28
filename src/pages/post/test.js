@@ -30,8 +30,7 @@ export async function getServerSideProps({ query }) {
 }
 
 export default function Post({ data }) {
-  return
-  <article>
+  return <article>
       <div>{data}</div>
   </article>
 }
