@@ -20,8 +20,6 @@ export async function getServerSideProps({ query }) {
 
   const data = response.data.values;
 
-  console.log(data)
-
   return {
       props: {
         data
@@ -30,7 +28,7 @@ export async function getServerSideProps({ query }) {
 }
 
 export default function Post({ data }) {
-  return <article>
-      <div>{data}</div>
-  </article>
+    return <article>
+        <div>{data}</div>
+    </article>
 }

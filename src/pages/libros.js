@@ -1,8 +1,6 @@
 import { DataGrid } from '@mui/x-data-grid';
 import { google } from 'googleapis';
-
-const VISIBLE_FIELDS = ['name', 'rating', 'country', 'dateCreated', 'isAdmin'];
-
+import Book from '../entity/book';
 
 export async function getServerSideProps({ query }) {
   const auth = new google.auth.GoogleAuth({
@@ -14,7 +12,6 @@ export async function getServerSideProps({ query }) {
   })
 
   const sheets = google.sheets({ version: 'v4', auth });
-  const { id } = query;
   const range = 'Libro!A:Z';
 
   const response = await sheets.spreadsheets.values.get({
@@ -24,51 +21,38 @@ export async function getServerSideProps({ query }) {
 
   const data = response.data.values;
 
-  let parsedData = []
-
-  for (let i = 1; i < data.length; i++) {
-    const book = {};
-    book['id'] = i;
-    for (let j = 0; j < data[0].length; j++) {
-      book[data[0][j]] = data[i][j];
+  if (data.length > 0) {
+    let books = []
+    for (let i = 1; i < data.length; i++) {
+        if (data[0][0]) books.push(Book.parseBook(data[i], data[0]));
     }
-    parsedData.push(book);
+    books = books.filter((book) => book['id'] != undefined)
+
+    return {
+        props: {
+          data: books
+        }
+    }
   }
   return {
       props: {
-        data: parsedData
+        data: []
       }
   }
 }
 
-function isValidHttpUrl(string) {
-  let url;
-
-  try {
-    url = new URL(string);
-  } catch (_) {
-    return false;
-  }
-
-  return url.protocol === "http:" || url.protocol === "https:";
-}
-
-
-
 const columns = [
   {
-    field: 'Nombre',
+    field: 'titulo',
     headerName: 'Título',
     flex: 1,
-    headerAlign: 'center',
     editable: true,
   },
   {
-    field: 'Imagen',
+    field: 'imagen',
     headerName: 'Portada',
     flex: 0,
     editable: true,
-    headerAlign: 'center',
     align: 'center',
     renderCell: (params) =>
       <div className='flex w-auto max-h-full'>
@@ -76,38 +60,33 @@ const columns = [
       </div>
   },
   {
-    field: 'Descripcion',
+    field: 'descripcion',
     headerName: 'Descripción',
-    flex: 1,
-    headerAlign: 'center',
+    flex: 2,
     editable: true,
   },
   {
-    field: 'Inicio',
-    headerName: 'Inicio',
-    flex: 0,
-    headerAlign: 'center',
-    editable: true,
-  },
-  {
-    field: 'Fin',
-    headerName: 'Fin',
-    flex: 0,
-    headerAlign: 'center',
-    editable: true,
-  },
-  {
-    field: 'Autor',
+    field: 'autor',
     headerName: 'Autor/a',
     flex: 1,
-    headerAlign: 'center',
     editable: true,
   },
   {
-    field: 'Paginas',
+    field: 'paginas',
     headerName: 'Páginas',
     flex: 0,
-    headerAlign: 'center',
+    editable: true,
+  },
+  {
+    field: 'inicio',
+    headerName: 'Inicio',
+    flex: 0,
+    editable: true,
+  },
+  {
+    field: 'fin',
+    headerName: 'Fin',
+    flex: 0,
     editable: true,
   }
 ];
@@ -117,59 +96,25 @@ const rows = [
 ];
 
 export default function Post({ data }) {
-  console.log(data)
-  console.log(rows)
-
-  return <article>
-      <DataGrid
-        rowHeight={150}
-        rows={data}
-        columns={columns}
-        initialState={{
-          pagination: {
-            paginationModel: {
-              pageSize: 10,
+  return(
+    <>
+    <article>
+        <DataGrid
+          rowHeight={150}
+          rows={data}
+          columns={columns}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                pageSize: 10,
+              },
             },
-          },
-        }}
-        pageSizeOptions={[5]}
-        checkboxSelection
-        disableRowSelectionOnClick
-      />
-    {/* <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
-        {data.map((row, i) => (
-          (() => {
-            if (i === 0) {
-              return (
-                <TableHead>
-                  <TableRow>
-                    {row.map((element) => (
-                      <TableCell align="center">{element}</TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-              );
-            } else {
-              return (
-                <TableBody>
-                  <TableRow>
-                  {row.map((element) => (
-                    <TableCell align="center">
-                      {
-                        isValidHttpUrl(element) ?
-                        (<img src={element} alt="Element" />) :
-                        (<span>{element}</span>)
-                      }
-                    </TableCell>
-                  ))}
-                  </TableRow>
-                </TableBody>
-              );
-            }
-          })()
-        ))}
-      </Table>
-    </TableContainer> */}
-  </article>
+          }}
+          pageSizeOptions={[5]}
+          checkboxSelection
+          disableRowSelectionOnClick
+        />
+    </article>
+    </>
+  )
 }

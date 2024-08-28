@@ -20,17 +20,22 @@ export async function getServerSideProps({ query }) {
 
   const data = response.data.values;
 
-  console.log(data)
-
-  return {
-      props: {
-        data
+  if (data.length > 0) {
+      let books = []
+      for (let i = 1; i < data.length; i++) {
+          if (data[0][0]) books.push(Book.parseBook(data[i], data[0]));
       }
+      books = books.filter((book) => book['id'] != undefined)
+
+    return {
+        props: {
+          books
+        }
+    }
   }
 }
 
 export default function Post({ data }) {
-    return <article>
-        <div>{data}</div>
-    </article>
+  return <article>
+  </article>
 }
