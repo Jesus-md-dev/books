@@ -88,6 +88,18 @@ const columns = [
     headerName: 'Fin',
     flex: 0,
     editable: true,
+  },
+  {
+    field: 'leido',
+    headerName: 'Leído',
+    flex: 0,
+    editable: true,
+  },
+  {
+    field: 'editar',
+    headerName: '',
+    flex: 0,
+    editable: true,
   }
 ];
 

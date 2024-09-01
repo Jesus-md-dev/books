@@ -2,19 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-main{
- margin-top: 2%;
-}
-
-header, .footer, .main-color {
-  background-color: #9fd1a6;
-  background-image: linear-gradient(45deg, #9fd1a6 75%, #d6efda 100%);
-}
-
-body {
-  height: 100vh;
-  background-color: #ffffff;
-  background-image: linear-gradient(180deg, #ffffff 90%, #e3ffe3 100%);
+@layer base {
+  h1 {
+    @apply text-2xl font-bold;
+  }
+  h2 {
+    @apply text-xl font-bold;
+  }
+  h3 {
+    @apply text-lg font-bold;
+  }
+  h4 {
+    @apply text-base font-bold;
+  }
+  h5 {
+    @apply text-sm font-bold;
+  }
 }
 
 @layer utilities {
@@ -22,3 +25,31 @@ body {
     text-wrap: balance;
   }
 }
+
+.map h1 {
+  text-shadow: 2px 0 #000000, -2px 0 #000000, 0 2px #000000, 0 -2px #000000,
+               1px 1px #000000, -1px -1px #000000, 1px -1px #000000, -1px 1px #000000;
+}
+
+.MuiButton-text {
+  @apply rounded
+}
+
+.menu-item {
+  @apply font-bold;
+}
+
+main {
+  margin-top: 2%;
+ }
+
+ header, .footer, .main-color {
+   background-color: #9fd1a6;
+   background-image: linear-gradient(45deg, #9fd1a6 75%, #d6efda 100%);
+ }
+
+ body {
+   height: 100vh;
+   background-color: #ffffff;
+   background-image: linear-gradient(180deg, #ffffff 90%, #e3ffe3 100%);
+ }
