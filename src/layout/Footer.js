@@ -1,20 +1,16 @@
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';
-import Image from 'next/image';
-import instagramIcon from "../../public/instagram.svg";
 
-
-
-const Footer = () => {
+function Footer () {
     var year = new Date().getFullYear()
     return (
       <>
-      <div className='bg-black h-2 w-full bottom-0 footer h-20'>
+      <div className='bg-black w-full bottom-0 footer h-20 absolute'>
         <Container maxWidth="xl" className='h-full'>
           <div className='flex justify-between h-full items-center'>
             <span className='font-semibold'>Copyright © {year}</span>
             <Button href="https://www.instagram.com/bahia.lectora/">
-              <Image alt="Instagram" width="" height="" src={instagramIcon}></Image>
+              <img alt="Instagram" width="" height="" src="/instagram.svg"></img>
             </Button>
           </div>
         </Container>
