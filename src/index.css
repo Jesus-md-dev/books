@@ -45,7 +45,7 @@
   }
 
   #root {
-    @apply relative min-h-screen bg-repeat bg-[url('./design-space-paper-textured-background.jpg')];
+    @apply relative min-h-screen bg-repeat bg-[url('./texture.jpg')];
   }
 
   #root::before{
