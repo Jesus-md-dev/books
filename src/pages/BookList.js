@@ -1,9 +1,9 @@
+import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
 import * as React from 'react';
 import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
 import Book from '../entity/book';
-
 
 const columns = [
   {
@@ -21,9 +21,10 @@ const columns = [
     editable: true,
     align: 'center',
     renderCell: (params) =>
-      <div className='flex w-auto h-full'>
-        <img alt="Portada libro" className='object-contain my-1' src={params.value}/>
-      </div>
+      <Button href={'/libro/' +  params.id} className='flex justify-center w-auto h-full'>
+        <img alt="Portada libro" className='object-contain my-1 h-full' src={params.value}/>
+      </Button>
+
   },
   {
     field: 'autor',
@@ -105,15 +106,6 @@ const BookList = () => {
           if (data[0][0]) books.push(Book.parseBook(data[i], data[0]));
       }
       books = books.filter((book) => book['id'] !== undefined)
-      books = books.filter((book) => book['inicio'] !== "" &&  book['inicio'] !== undefined)
-          .sort(function (a, b) {
-              let dateA = a['inicio'].split('/')
-              let dateB = b['inicio'].split('/')
-              dateA = new Date(dateA[1] + '/' + dateA[0] + '/' + dateA[2])
-              dateB = new Date(dateB[1] + '/' + dateB[0] + '/' + dateB[2])
-              return dateB - dateA;
-          }
-      );
   }
 
   return(
@@ -128,6 +120,9 @@ const BookList = () => {
               paginationModel: {
                 pageSize: 10,
               },
+            },
+            sorting: {
+              sortModel: [{ field: 'titulo', sort: 'asc' }],
             },
           }}
           pageSizeOptions={[10]}

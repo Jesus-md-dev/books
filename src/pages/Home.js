@@ -45,10 +45,10 @@ const Home = () => {
         <>
         <h1 className='text-center my-3'>Lectura actual</h1>
         <Grid container spacing={6} className="justify-center">
-            <Grid size="auto" className='justify-center flex p-2'>
+            <Grid key={actual['id']} size="auto" className='justify-center flex p-2'>
                 <Button href={'/libro/' + actual['id']}>
                     <div className='text-center text-black'>
-                        <div className='flex w-auto max-h-full'>
+                        <div className='flex justify-center w-auto max-h-full'>
                             <img className='my-1 h-80 lg:border-[15px] border-8 border-slate-950' src={actual['imagen']} alt={actual['titulo']}/>
                         </div>
                         <h5>{actual['titulo']}</h5>

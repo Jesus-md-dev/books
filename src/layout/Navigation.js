@@ -58,14 +58,14 @@ function Navigation() {
             >
                 <MenuItem onClick={handleCloseNavMenu} >
                   <Button
-                className='menu-item'
+                className='menu-item font-bold text-black	'
                 href='/libros'>
-                  <Typography sx={{ textAlign: 'center' }}>LIBROS</Typography>
+                  <Typography sx={{ textAlign: 'center' }}>LISTA DE LIBROS</Typography>
                 </Button>
                 </MenuItem>
             </Menu>
           </Box>
-          <Button href="/" className=''>
+          <Button href="/">
             <Avatar alt="Bahía Lectora logo" src={"/logo.jpg"} className='mr-6  w-auto' />
             <Typography
               variant="h6"
@@ -85,11 +85,11 @@ function Navigation() {
           </Button>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
               <Button
-                className='menu-item'
+                className='menu-item font-bold'
                 href='/libros'
                 sx={{ my: 2, color: 'black', display: 'block' }}
               >
-                LIBROS
+                LISTA DE LIBROS
               </Button>
           </Box>
         </Toolbar>
