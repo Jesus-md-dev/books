@@ -57,9 +57,9 @@ function Navigation() {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
                 <MenuItem onClick={handleCloseNavMenu} >
-                  <Button
-                className='menu-item font-bold text-black	'
-                href='/libros'>
+                <Button
+                  className='menu-item font-bold text-black	'
+                  href='/libros'>
                   <Typography sx={{ textAlign: 'center' }}>LISTA DE LIBROS</Typography>
                 </Button>
                 </MenuItem>
@@ -90,6 +90,13 @@ function Navigation() {
                 sx={{ my: 2, color: 'black', display: 'block' }}
               >
                 LISTA DE LIBROS
+              </Button>
+              <Button
+                className='menu-item font-bold'
+                href='/sorteo'
+                sx={{ my: 2, color: 'black', display: 'block' }}
+              >
+                Sorteo
               </Button>
           </Box>
         </Toolbar>

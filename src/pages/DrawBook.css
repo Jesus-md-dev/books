@@ -1,0 +1,50 @@
+*,
+*::after,
+*::before {
+  overflow: hidden;
+}
+
+.scroll-container {
+  height: 25rem;
+  width: 25rem;
+  position: relative;
+}
+
+.carousel-primary,
+.carousel-secondary {
+  left: 500%;
+  width: 500%;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+}
+
+.carousel-primary .carousel-card {
+  width: 20rem;
+  margin-left: 20px;
+}
+
+.carousel-primary {
+  display: flex;
+  justify-content: space-around;
+  animation: scroll-horizontal 2s linear infinite;
+}
+
+.carousel-secondary {
+  animation: scroll-horizontal 2s linear infinite;
+  animation-delay: 1s;
+}
+
+@keyframes scroll-horizontal {
+  0% {
+    left: 500%;
+  }
+
+  100% {
+    left: -500%;
+  }
+}
+
+.hidden-element {
+    display: none !important;
+}
