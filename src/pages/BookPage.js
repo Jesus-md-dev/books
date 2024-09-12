@@ -45,8 +45,6 @@ const BookList = () => {
     let book_puntuations = puntuations['data'][0]['data']
         .filter((punt) => punt['lid'] === id);
 
-    console.log(book_media)
-    console.log(book_puntuations)
     return(
     <>
     {isMobile}

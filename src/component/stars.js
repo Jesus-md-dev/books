@@ -11,7 +11,6 @@ const Stars = (props) => {
     }
     else if (n_stars < 0) {
         n_stars *= -1
-        console.log(n_stars)
         for (let index = 1; index <= n_stars; index++) {
             stars.push(<img key={index} alt="Poop" width="" height="" src="/poop.svg"></img>)
         }
