@@ -72,7 +72,7 @@ const Home = () => {
                 <iframe
                     title='google-maps'
                     className='h-80 max-w-xs w-full my-1'
-                    src={`https://www.google.com/maps/embed/v1/place?key=***REMOVED***&q=${encodeURIComponent('ffffffffffffffffff')}`}
+                    src={`https://www.google.com/maps/embed/v1/place?key=***REMOVED***&q=cadiz,provincia}`}
                     loading="lazy"
                 ></iframe>
             </div>

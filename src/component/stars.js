@@ -1,6 +1,7 @@
 const Stars = (props) => {
     let stars = []
-    let n_stars = props.n.replace(',', '.')
+    let string_stars = props.n.toString()
+    let n_stars = string_stars.replace(',', '.')
     if (n_stars > 0) {
         for (let index = 1; index <= n_stars; index++) {
             stars.push(<img key={index} alt="Star" width="" height="" src="/star.svg"></img>)

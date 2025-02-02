@@ -91,13 +91,13 @@ function Navigation() {
               >
                 LISTA DE LIBROS
               </Button>
-              <Button
+              {/* <Button
                 className='menu-item font-bold'
                 href='/sorteo'
                 sx={{ my: 2, color: 'black', display: 'block' }}
               >
                 Sorteo
-              </Button>
+              </Button> */}
           </Box>
         </Toolbar>
       </Container>

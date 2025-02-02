@@ -1,6 +1,6 @@
-*,
-*::after,
-*::before {
+.carousel,
+.carousel::after,
+.carousel::before {
   overflow: hidden;
 }
 

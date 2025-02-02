@@ -19,75 +19,94 @@ const BookList = () => {
         sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
         sheetsOptions: [{ id: 'MediaPuntuacion' }],
     });
-
     const puntuations = useGoogleSheets({
         apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
         sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
         sheetsOptions: [{ id: 'Puntuacion' }],
     });
+    const users = useGoogleSheets({
+        apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+        sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
+        sheetsOptions: [{ id: 'Usuarios' }],
+    });
 
 
-    if (loading || media_puntuation['loading'] || puntuations['loading']) {
+    if (loading || media_puntuation['loading'] || puntuations['loading'] || users['loading']) {
         return(
             <Loading></Loading>
         );
     }
 
-    if (error || media_puntuation['error'] || puntuations['error']) {
+    if (error || media_puntuation['error']  || puntuations['error'] || users['error']) {
         return <div>Error!</div>;
     }
 
     let book = data[0]['data'].filter((book) => book['id'] === id).shift();
+    let users_array = users['data'][0]['data'];
 
     let book_media = media_puntuation['data'][0]['data']
         .filter((punt) => punt['lid'] === id).shift();
-
+    console.log( puntuations['data'][0]['data'])
+    console.log(id)
     let book_puntuations = puntuations['data'][0]['data']
         .filter((punt) => punt['lid'] === id);
+    console.log(book_puntuations)
 
+    book_puntuations.forEach(
+        puntuation => {
+            let user = users_array.find((user) => user['uid'] == puntuation['uid'])
+            if (user) {
+                puntuation['user_name'] = user['nombre']
+            }
+        }
+    );
+    book_puntuations.sort((a, b) => a['user_name'] > b['user_name'] ? 1 : -1)
+    console.log(book_puntuations)
     return(
     <>
     {isMobile}
-    <Grid container spacing={2} className="lg:mx-[20%]">
-        <Grid size={4}>
-        <div className='flex w-auto max-h-full'>
-            <img className='object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950' src={book['imagen']} alt={book['titulo']}/>
-        </div>
-        </Grid>
-        <Grid size={8}>
-            <div className='w-auto text-center'>
-                <p>Desde el {book['inicio']}
-                    {
-                        book['fin'] ?
-                            <span> hasta el {book['fin']}</span> :
-                            <span> hasta por definir</span>
-                    }</p>
-                <h1>{book['titulo']}</h1>
-                <p className='mt-2'>{book['descripcion'].slice(0, book['descripcion'].slice(0, isMobile ? 100:500).lastIndexOf(" "))} ...</p>
-                    {(book_media && book_media !== []) && <div className='flex flex-col text-center text-black mt-2'>
-                            <h2>MEDIA</h2>
-                            <div>
-                                <Stars n={book_media['promedio']} className="ml-1"></Stars>
-                            </div>
-                        </div>
-                    }
+    <div className='lg:mx-[20%]'>
+        <Grid container spacing={2} >
+            <Grid size={4}>
+            <div className='flex w-auto max-h-full'>
+                <img className='object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950' src={book['imagen']} alt={book['titulo']}/>
             </div>
+            </Grid>
+            <Grid size={8}>
+                <div className='w-auto text-center'>
+                    <p>Desde el {book['inicio']}
+                        {
+                            book['fin'] ?
+                                <span> hasta el {book['fin']}</span> :
+                                <span> hasta por definir</span>
+                        }</p>
+                    <h1>{book['titulo']}</h1>
+                    <p className='mt-2'>{book['descripcion'].slice(0, book['descripcion'].slice(0, isMobile ? 100:500).lastIndexOf(" "))} ...</p>
+                        {(book_media && book_media['promedio'] !== '#DIV/0!') && <div className='flex flex-col text-center text-black mt-2'>
+                                <h2>Media</h2>
+                                <h3>
+                                    <Stars n={book_media['promedio']} className="ml-1"></Stars> ({book_media['promedio']})
+                                </h3>
+                            </div>
+                        }
+                </div>
+            </Grid>
         </Grid>
-    </Grid>
-    <Grid container spacing={6} className="justify-center mt-10">
-        {book_puntuations.map(puntuation => {
-                return (
-                    <Grid key={puntuation['uid']} size="auto" className='justify-center flex p-2'>
-                        <div className='text-center text-black'>
-                            <h1>{puntuation['uid']}</h1>
-                            <h1>
-                                <Stars n={puntuation['puntuacion']}></Stars>
-                            </h1>
-                        </div>
-                    </Grid>
-                );
-            })}
+        <Grid container spacing={6} className="justify-center mt-10">
+            {book_puntuations.map(puntuation => {
+                    return (
+                        <Grid key={puntuation['uid']} size="auto" className='justify-center flex p-2'>
+                            <div className='text-center text-black'>
+                                <h1>{puntuation['user_name']}</h1>
+                                <h3>
+                                    <Stars n={puntuation['puntuacion']}></Stars> ({puntuation['puntuacion']})
+                                </h3>
+                            </div>
+                        </Grid>
+                    );
+                })}
         </Grid>
+    </div>
     </>
     )
 }

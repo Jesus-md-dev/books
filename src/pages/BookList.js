@@ -3,7 +3,8 @@ import { DataGrid } from '@mui/x-data-grid';
 import * as React from 'react';
 import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
-import Book from '../entity/book';
+import Stars from '../component/stars';
+
 
 const columns = [
   {
@@ -25,6 +26,14 @@ const columns = [
         <img alt="Portada libro" className='object-contain my-1 h-full' src={params.value}/>
       </Button>
 
+  },
+  {
+    field: 'media',
+    headerName: 'Media',
+    flex: 1,
+    minWidth: 100,
+    editable: true,
+    align: 'center',
   },
   {
     field: 'autor',
@@ -101,11 +110,11 @@ const BookList = () => {
   let books = data[0]['data']
 
   if (data.length > 0) {
-
-      for (let i = 1; i < data.length; i++) {
-          if (data[0][0]) books.push(Book.parseBook(data[i], data[0]));
-      }
+      console.log(books)
       books = books.filter((book) => book['id'] !== undefined)
+      for (let index = 0; index < books.length; index++) {
+        books[index]['media'] = Math.round(Math.random()*5*100)/100
+      }
   }
 
   return(

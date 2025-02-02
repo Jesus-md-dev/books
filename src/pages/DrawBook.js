@@ -111,7 +111,7 @@ const DrawBook = () => {
                 </Button>
             </div>
             <div className='flex justify-center'>
-                <div className="scroll-container hidden-element">
+                <div className="scroll-container hidden-element carousel">
                     <div className="carousel-primary">
                         {drawList.map((book) => {
                             return (
