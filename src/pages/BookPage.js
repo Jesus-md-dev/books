@@ -54,7 +54,7 @@ const BookList = () => {
 
     book_puntuations.forEach(
         puntuation => {
-            let user = users_array.find((user) => user['uid'] == puntuation['uid'])
+            let user = users_array.find((user) => user['uid'] === puntuation['uid'])
             if (user) {
                 puntuation['user_name'] = user['nombre']
             }
