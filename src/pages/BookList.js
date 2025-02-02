@@ -3,8 +3,6 @@ import { DataGrid } from '@mui/x-data-grid';
 import * as React from 'react';
 import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
-import Stars from '../component/stars';
-
 
 const columns = [
   {
