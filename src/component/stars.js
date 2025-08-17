@@ -1,33 +1,38 @@
-const Stars = (props) => {
-    let stars = []
-    let string_stars = props.n.toString()
-    let n_stars = string_stars.replace(',', '.')
-    if (n_stars > 0) {
-        for (let index = 1; index <= n_stars; index++) {
-            stars.push(<img key={index} alt="Star" width="" height="" src="/star.svg"></img>)
+
+/**
+ * Renders a row of star, half-star, poop, or zero icons based on the rating value.
+ * @param {{ n: number|string }} props - The rating value (can be positive, negative, or zero).
+ * @returns {JSX.Element}
+ */
+const Stars = ({ n }) => {
+    const stars = [];
+    const nString = n.toString();
+    let nStars = parseFloat(nString.replace(',', '.'));
+
+    if (nStars > 0) {
+        for (let i = 1; i <= Math.floor(nStars); i++) {
+            stars.push(<img key={i} alt="Star" src="/star.svg" />);
         }
-        if (n_stars % 1 !== 0) {
-            stars.push(<img key={n_stars} alt="Half star" width="" height="" src="/star-half.svg"></img>)
+        if (nStars % 1 !== 0) {
+            stars.push(<img key={nStars} alt="Half star" src="/star-half.svg" />);
         }
-    }
-    else if (n_stars < 0) {
-        n_stars *= -1
-        for (let index = 1; index <= n_stars; index++) {
-            stars.push(<img key={index} alt="Poop" width="" height="" src="/poop.svg"></img>)
+    } else if (nStars < 0) {
+        nStars = Math.abs(nStars);
+        for (let i = 1; i <= Math.floor(nStars); i++) {
+            stars.push(<img key={i} alt="Poop" src="/poop.svg" />);
         }
-        if (n_stars % 1 !== 0) {
-            stars.push(<img key={n_stars} alt="Half poop" width="" height="" src="/poop-half.svg"></img>)
+        if (nStars % 1 !== 0) {
+            stars.push(<img key={nStars} alt="Half poop" src="/poop-half.svg" />);
         }
-    }
-    else {
-        stars.push(<img key={n_stars} alt="Half poop" width="" height="" src="/zero.svg"></img>)
+    } else {
+        stars.push(<img key={nStars} alt="Zero" src="/zero.svg" />);
     }
 
-    return(
-        <div className='flex justify-center h-5'>
+    return (
+        <div className="flex justify-center h-5">
             {stars}
         </div>
     );
-}
+};
 
 export default Stars;

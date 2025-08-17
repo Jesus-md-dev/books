@@ -1,114 +1,108 @@
 import Grid from '@mui/material/Grid2';
-import * as React from 'react';
-import { useMediaQuery } from 'react-responsive';
-import { useParams } from 'react-router';
 import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
 import Stars from '../component/stars';
+import { useEffect, useState } from 'react';
+import { getGoogleData } from '../controller/bookController';
+import { useParams } from 'react-router-dom';
 
-const BookList = () => {
+
+
+/**
+ * BookPage component displaying details and ratings for a single book.
+ * @returns {JSX.Element}
+ */
+const BookPage = () => {
+    const [dataBooks, setDataBooks] = useState([]);
     const { id } = useParams();
-    const isMobile = useMediaQuery({ query: `(max-width: 760px)` });
+    let book = null;
+
     const { data, loading, error } = useGoogleSheets({
-    apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-    sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-    sheetsOptions: [{ id: 'Libro' }],
-    });
-    const media_puntuation = useGoogleSheets({
         apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
         sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-        sheetsOptions: [{ id: 'MediaPuntuacion' }],
-    });
-    const puntuations = useGoogleSheets({
-        apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-        sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-        sheetsOptions: [{ id: 'Puntuacion' }],
-    });
-    const users = useGoogleSheets({
-        apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-        sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-        sheetsOptions: [{ id: 'Usuarios' }],
+        sheetsOptions: [{ id: 'Libros' }],
     });
 
+    useEffect(() => {
+        const cachedBooks = localStorage.getItem('dataBooks');
+        if (cachedBooks && dataBooks.length === 0) {
+            setDataBooks(JSON.parse(cachedBooks));
+        }
+        // eslint-disable-next-line
+    }, []);
 
-    if (loading || media_puntuation['loading'] || puntuations['loading'] || users['loading']) {
-        return(
-            <Loading></Loading>
-        );
+    useEffect(() => {
+        async function loadBooks() {
+            const books = await getGoogleData(data, loading, error, dataBooks);
+            if (books && books.length > 0) {
+                setDataBooks(books);
+            }
+        }
+        loadBooks();
+        // eslint-disable-next-line
+    }, [data, loading, error]);
+
+    if (dataBooks && dataBooks.length > 0) {
+        dataBooks.forEach(gridBook => {
+            if (gridBook['titulo'] === id) book = gridBook;
+        });
     }
 
-    if (error || media_puntuation['error']  || puntuations['error'] || users['error']) {
+    if (loading && dataBooks.length === 0) {
+        return <Loading />;
+    }
+
+    if (error) {
         return <div>Error!</div>;
     }
 
-    let book = data[0]['data'].filter((book) => book['id'] === id).shift();
-    let users_array = users['data'][0]['data'];
+    if (!book) {
+        return <div>Libro no encontrado.</div>;
+    }
 
-    let book_media = media_puntuation['data'][0]['data']
-        .filter((punt) => punt['lid'] === id).shift();
-    console.log( puntuations['data'][0]['data'])
-    console.log(id)
-    let book_puntuations = puntuations['data'][0]['data']
-        .filter((punt) => punt['lid'] === id);
-    console.log(book_puntuations)
-
-    book_puntuations.forEach(
-        puntuation => {
-            let user = users_array.find((user) => user['uid'] === puntuation['uid'])
-            if (user) {
-                puntuation['user_name'] = user['nombre']
-            }
-        }
-    );
-    book_puntuations.sort((a, b) => a['user_name'] > b['user_name'] ? 1 : -1)
-    console.log(book_puntuations)
-    return(
-    <>
-    {isMobile}
-    <div className='lg:mx-[20%]'>
-        <Grid container spacing={2} >
-            <Grid size={4}>
-            <div className='flex w-auto max-h-full'>
-                <img className='object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950' src={book['imagen']} alt={book['titulo']}/>
-            </div>
-            </Grid>
-            <Grid size={8}>
-                <div className='w-auto text-center'>
-                    <p>Desde el {book['inicio']}
-                        {
-                            book['fin'] ?
-                                <span> hasta el {book['fin']}</span> :
-                                <span> hasta por definir</span>
-                        }</p>
-                    <h1>{book['titulo']}</h1>
-                    <p className='mt-2'>{book['descripcion'].slice(0, book['descripcion'].slice(0, isMobile ? 100:500).lastIndexOf(" "))} ...</p>
-                        {(book_media && book_media['promedio'] !== '#DIV/0!') && <div className='flex flex-col text-center text-black mt-2'>
+    return (
+        <div className="lg:mx-[20%]">
+            <Grid container spacing={2}>
+                <Grid size={4}>
+                    <div className="flex w-auto max-h-full">
+                        <img
+                            className="object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950"
+                            src={book['imagen']}
+                            alt={book['titulo']}
+                        />
+                    </div>
+                </Grid>
+                <Grid size={8}>
+                    <div className="w-auto text-center">
+                        <h1>{book['titulo']}</h1>
+                        <p className="mt-2">
+                            {book['titulo'].slice(0, book['titulo'].slice(0, 500).lastIndexOf(' '))} ...
+                        </p>
+                        {book['media'] && (
+                            <div className="flex flex-col text-center text-black mt-2">
                                 <h2>Media</h2>
                                 <h3>
-                                    <Stars n={book_media['promedio']} className="ml-1"></Stars> ({book_media['promedio']})
+                                    <Stars n={book['media']} className="ml-1" /> ({book['media']})
                                 </h3>
                             </div>
-                        }
-                </div>
+                        )}
+                    </div>
+                </Grid>
             </Grid>
-        </Grid>
-        <Grid container spacing={6} className="justify-center mt-10">
-            {book_puntuations.map(puntuation => {
-                    return (
-                        <Grid key={puntuation['uid']} size="auto" className='justify-center flex p-2'>
-                            <div className='text-center text-black'>
-                                <h1>{puntuation['user_name']}</h1>
-                                <h3>
-                                    <Stars n={puntuation['puntuacion']}></Stars> ({puntuation['puntuacion']})
-                                </h3>
-                            </div>
-                        </Grid>
-                    );
-                })}
-        </Grid>
-    </div>
-    </>
-    )
-}
+            <Grid container spacing={6} className="justify-center mt-10">
+                {book['votos'].map(puntuation => (
+                    <Grid key={puntuation['nombre']} size="auto" className="justify-center flex p-2">
+                        <div className="text-center text-black">
+                            <h1>{puntuation['nombre']}</h1>
+                            <h3>
+                                <Stars n={puntuation['voto']} /> ({puntuation['voto']})
+                            </h3>
+                        </div>
+                    </Grid>
+                ))}
+            </Grid>
+        </div>
+    );
+};
 
-export default BookList;
+export default BookPage;

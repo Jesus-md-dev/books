@@ -1,51 +1,56 @@
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
-import * as React from 'react';
 import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
-import Book from '../entity/book';
+import { useEffect, useState } from 'react';
+import { getGoogleData } from '../controller/bookController';
 
+
+/**
+ * Home page component displaying current and previous books.
+ * @returns {JSX.Element}
+ */
 const Home = () => {
+  const [dataBooks, setDataBooks] = useState([]);
+
   const { data, loading, error } = useGoogleSheets({
     apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
     sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-    sheetsOptions: [{ id: 'Libro' }],
+    sheetsOptions: [{ id: 'Libros' }],
   });
 
+  useEffect(() => {
+    const cachedBooks = localStorage.getItem('dataBooks');
+    if (cachedBooks && dataBooks.length === 0) {
+      setDataBooks(JSON.parse(cachedBooks));
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    async function loadBooks() {
+      const books = await getGoogleData(data, loading, error, dataBooks);
+      if (books && books.length > 0) {
+        setDataBooks(books);
+      }
+    }
+    loadBooks();
+    // eslint-disable-next-line
+  }, [data, loading, error]);
+
   if (loading) {
-    return(
-      <Loading></Loading>
-    );
+    return <Loading />;
   }
 
   if (error) {
     return <div>Error!</div>;
   }
-  let books = data[0]['data']
 
-  if (data.length > 0) {
-
-      for (let i = 1; i < data.length; i++) {
-          if (data[0][0]) books.push(Book.parseBook(data[i], data[0]));
-      }
-      books = books.filter((book) => book['id'] !== undefined)
-      books = books.filter((book) => book['inicio'] !== "" &&  book['inicio'] !== undefined)
-          .sort(function (a, b) {
-              let dateA = a['inicio'].split('/')
-              let dateB = b['inicio'].split('/')
-              dateA = new Date(dateA[1] + '/' + dateA[0] + '/' + dateA[2])
-              dateB = new Date(dateB[1] + '/' + dateB[0] + '/' + dateB[2])
-              return dateB - dateA;
-          }
-      );
-  }
-
-  let actual = books.shift()
-    return(
-        <>
-        <h1 className='text-center my-3'>Lectura actual</h1>
-        <Grid container spacing={6} className="justify-center">
-            <Grid key={actual['id']} size="auto" className='justify-center flex p-2'>
+  return (
+    <>
+      <h1 className="text-center my-3">Lectura actual</h1>
+      <Grid container spacing={6} className="justify-center">
+        {/* <Grid key={actual['id']} size="auto" className='justify-center flex p-2'>
                 <Button href={'/libro/' + actual['id']}>
                     <div className='text-center text-black'>
                         <div className='flex justify-center w-auto max-h-full'>
@@ -78,28 +83,29 @@ const Home = () => {
             </div>
             }
             <h2>Lugar de la quedada</h2>
-            </Grid>
-        </Grid>
-        <h1 className='text-center my-5'>Leidos anteriormente</h1>
-        <Grid container spacing={6} className="justify-center">
-            {books.map(book => {
-                return (
-                    <Grid key={book['id']} size="auto" className='justify-center flex p-2'>
-                        <Button href={'/libro/' + book['id']}>
-                            <div className='text-center text-black'>
-                                <div className='flex justify-center w-auto max-h-full'>
-                                    <img className='my-1 h-80 lg:border-[15px] border-8 border-slate-950' src={book['imagen']} alt={book['titulo']}/>
-                                </div>
-                                <h5>{book['titulo']}</h5>
-                                <h5>{book['autor']} - {book['paginas']} Páginas</h5>
-                            </div>
-                        </Button>
-                    </Grid>
-                );
-            })}
-        </Grid>
-        </>
-    )
+            </Grid> */}
+      </Grid>
+      <h1 className="text-center my-5">Leidos anteriormente</h1>
+      <Grid container spacing={6} className="justify-center">
+        {dataBooks.map(book => (
+          <Grid key={book['id']} size="auto" className="justify-center flex p-2">
+            <Button href={"/libro/" + book['titulo']}>
+              <div className="text-center text-black">
+                <div className="flex justify-center w-auto max-h-full">
+                  <img
+                    className="my-1 h-80 lg:border-[15px] border-8 border-slate-950"
+                    src={book['imagen']}
+                    alt={book['titulo']}
+                  />
+                </div>
+                <h5>{book['titulo']}</h5>
+              </div>
+            </Button>
+          </Grid>
+        ))}
+      </Grid>
+    </>
+  );
 };
 
 export default Home;
