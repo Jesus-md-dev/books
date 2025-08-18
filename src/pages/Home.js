@@ -14,6 +14,9 @@ import { getGoogleData } from '../controller/bookController';
 const Home = () => {
   const [dataBooks, setDataBooks] = useState([]);
 
+  console.log(process.env.REACT_APP_GOOGLE_API_KEY)
+  console.log(process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID)
+
   const { data, loading, error } = useGoogleSheets({
     apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
     sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
