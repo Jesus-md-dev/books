@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
 import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
-
+import NoService  from '../component/noService';
 
 /**
  * Home page component displaying current and previous books.
@@ -44,7 +44,7 @@ const Home = () => {
   }
 
   if (error) {
-    return <div>Error!</div>;
+    return <NoService />;
   }
 
   return (

@@ -5,6 +5,7 @@ import { DataGrid } from '@mui/x-data-grid';
 import Loading from '../component/loading';
 import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
+import NoService  from '../component/noService';
 
 const columns = [
   {
@@ -83,7 +84,7 @@ const BookList = () => {
   }
 
   if (error) {
-    return <div>Error!</div>;
+    return <NoService />;
   }
 
   return (

@@ -7,6 +7,7 @@ import Stars from '../component/stars';
 import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
 import './BookPage.css';
+import NoService  from '../component/noService';
 
 /**
  * BookPage component displaying details and ratings for a single book.
@@ -55,7 +56,7 @@ const BookPage = () => {
     }
 
     if (error) {
-        return <div>Error!</div>;
+        return <NoService />;
     }
 
     if (!book) {

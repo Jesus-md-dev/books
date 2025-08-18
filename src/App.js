@@ -1,6 +1,6 @@
 // App.js
 
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import BookList from './pages/BookList';
 import BookPage from './pages/BookPage';
 import DrawBook from './pages/DrawBook';
@@ -15,6 +15,7 @@ const App = () => {
             <Route path="/libros" element={<BookList />} />
             <Route path="/libro/:id" element={<BookPage />} />
             <Route path="/sorteo" element={<DrawBook />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
          </Routes>
       </>
    );

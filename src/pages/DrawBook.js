@@ -1,10 +1,11 @@
 
-import * as React from 'react';
 import Book from '../entity/book';
 import Button from '@mui/material/Button';
 import Loading from '../component/loading';
 import useGoogleSheets from 'use-google-sheets';
 import './DrawBook.css';
+import NoService  from '../component/noService';
+
 
 function getNRandomItems(items, n) {
     let array = []
@@ -30,7 +31,7 @@ const DrawBook = () => {
   }
 
   if (error) {
-    return <div>Error!</div>;
+    return <NoService />;
   }
 
   let books = data[0]['data']
