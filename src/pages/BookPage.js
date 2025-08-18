@@ -76,24 +76,20 @@ const BookPage = () => {
     } = book || {};
 
     return (
-        <div className="lg:mx-[20%]">
-            <Grid container spacing={2}>
-                <Grid size={4}>
+        <div className="lg:mx-[10%] flex flex-col items-center">
+          
                     <div className="flex w-auto max-h-full">
                         <img
-                            className="object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950"
+                            className="book-image object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950"
                             src={imagen}
                             alt={titulo}
                         />
                     </div>
-                </Grid>
-                <Grid size={8}>
+              
                     <div className="w-auto text-center">
                         <h1>{titulo}</h1>
                         <p className="mt-2">
-                            {descripcion
-                                ? `${descripcion.slice(0, descripcion.slice(0, 500).lastIndexOf(' '))} ...`
-                                : ''}
+                            {descripcion}
                         </p>
                         <p><b>Fecha de publicación:</b> {fecha_publicacion}</p>
                         <p><b>Categorías:</b> {categorias.join(', ')}</p>
@@ -101,17 +97,16 @@ const BookPage = () => {
                             <b>Editorial:</b> {editorial} - <b>Páginas:</b> {n_paginas}
                         </p>
                     </div>
-                </Grid>
-            </Grid>
+  
             {media && (
                 <div className="media flex flex-col text-center text-black mt-2 ">
                     <h1>Media</h1>
                     <h3>
-                        <Stars n={media} className="ml-1" /> ({media})
+                        <Stars n={media} className="ml-1" /> {media}
                     </h3>
                 </div>
             )}
-            <Grid container className="justify-center mt-10">
+            <Grid container className="justify-evenly mt-10">
                 {votos.map(puntuation => (
                     <Grid
                         key={puntuation['nombre']}
@@ -123,9 +118,9 @@ const BookPage = () => {
                     >
                         <div className="text-center text-black">
                             <h3>{puntuation['nombre']}</h3>
-                            <h5>
-                                <Stars n={puntuation['voto']} /> ({puntuation['voto']})
-                            </h5>
+                            <h4>
+                                <Stars n={puntuation['voto']} /> {puntuation['voto']}
+                            </h4>
                         </div>
                     </Grid>
                 ))}
