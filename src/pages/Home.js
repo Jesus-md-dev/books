@@ -4,7 +4,7 @@ import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
 import useGoogleSheets from 'use-google-sheets';
-import { getGoogleData } from '../controller/bookController';
+import { useBooksController } from '../controller/useBooksController';
 import NoService  from '../component/noService';
 
 /**
@@ -21,23 +21,22 @@ const Home = () => {
   });
 
   useEffect(() => {
-    const cachedBooks = localStorage.getItem('dataBooks');
-    if (cachedBooks && dataBooks.length === 0) {
-      setDataBooks(JSON.parse(cachedBooks));
-    }
+    const fetchBooks = async () => {
+      let cachedBooks = localStorage.getItem('dataBooks');
+      while (!cachedBooks || cachedBooks.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('No books found, checking cache...');
+        cachedBooks = localStorage.getItem('dataBooks');
+      }
+      if (cachedBooks && dataBooks.length === 0) {
+        setDataBooks(JSON.parse(cachedBooks));
+      }
+    };
+    fetchBooks();
     // eslint-disable-next-line
   }, []);
 
-  useEffect(() => {
-    async function loadBooks() {
-      const books = await getGoogleData(data, loading, error, dataBooks);
-      if (books && books.length > 0) {
-        setDataBooks(books);
-      }
-    }
-    loadBooks();
-    // eslint-disable-next-line
-  }, [data, loading, error]);
+  useBooksController(data, loading, error);
 
   if (loading && dataBooks.length === 0) {
     return <Loading />;

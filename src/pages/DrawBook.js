@@ -1,9 +1,11 @@
-
+import { useEffect, useState } from 'react';
 import Book from '../entity/book';
 import Button from '@mui/material/Button';
 import Loading from '../component/loading';
 import useGoogleSheets from 'use-google-sheets';
 import './DrawBook.css';
+import { useBooksController } from '../controller/useBooksController';
+
 import NoService  from '../component/noService';
 
 
@@ -18,16 +20,34 @@ function getNRandomItems(items, n) {
 }
 
 const DrawBook = () => {
+  const [dataBooks, setDataBooks] = useState([]);
+
   const { data, loading, error } = useGoogleSheets({
     apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
     sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-    sheetsOptions: [{ id: 'Libro' }],
+    sheetsOptions: [{ id: 'Libros' }],
   });
 
-  if (loading) {
-    return(
-      <Loading></Loading>
-    );
+  useEffect(() => {
+    const fetchBooks = async () => {
+      let cachedBooks = localStorage.getItem('dataBooks');
+      while (!cachedBooks || cachedBooks.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('No books found, checking cache...');
+        cachedBooks = localStorage.getItem('dataBooks');
+      }
+      if (cachedBooks && dataBooks.length === 0) {
+        setDataBooks(JSON.parse(cachedBooks));
+      }
+    };
+    fetchBooks();
+    // eslint-disable-next-line
+  }, []);
+
+  useBooksController(data, loading, error);
+
+  if (loading && dataBooks.length === 0) {
+    return <Loading />;
   }
 
   if (error) {

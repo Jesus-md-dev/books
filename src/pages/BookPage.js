@@ -8,6 +8,8 @@ import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
 import './BookPage.css';
 import NoService  from '../component/noService';
+import { useBooksController } from '../controller/useBooksController';
+
 
 /**
  * BookPage component displaying details and ratings for a single book.
@@ -25,24 +27,22 @@ const BookPage = () => {
     });
 
     useEffect(() => {
-        const cachedBooks = localStorage.getItem('dataBooks');
-        if (cachedBooks && dataBooks.length === 0) {
+        const fetchBooks = async () => {
+            let cachedBooks = localStorage.getItem('dataBooks');
+            while (!cachedBooks || cachedBooks.length === 0) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            console.log('No books found, checking cache...');
+            cachedBooks = localStorage.getItem('dataBooks');
+            }
+            if (cachedBooks && dataBooks.length === 0) {
             setDataBooks(JSON.parse(cachedBooks));
-        }
+            }
+        };
+        fetchBooks();
         // eslint-disable-next-line
     }, []);
 
-    useEffect(() => {
-        async function loadBooks() {
-            const books = await getGoogleData(data, loading, error, dataBooks);
-            if (books && books.length > 0) {
-                setDataBooks(books);
-            }
-        }
-        loadBooks();
-        // eslint-disable-next-line
-    }, [data, loading, error]);
-
+    useBooksController(data, loading, error);
 
     if (dataBooks && dataBooks.length > 0) {
         dataBooks.forEach(gridBook => {

@@ -21,7 +21,7 @@ export async function fetchGoogleData(title, startIndex = 0) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response.json();
+    return await response;
   } catch (error) {
     console.error('Error fetching book data:', error);
     return undefined;
@@ -112,6 +112,9 @@ export async function getGoogleData(data, loading, error, dataBooks) {
         if (gridBooks.length === 0) {
             gridBooks = dataBooks;
         }
+        else {
+          localStorage.setItem('dataBooks', JSON.stringify(gridBooks));
+        }
 
         // Helper to update book info from a Google Books API item
         function updateBookFromItem(book, item) {
@@ -146,7 +149,15 @@ export async function getGoogleData(data, loading, error, dataBooks) {
                 const queries = [book.titulo + '.*', book.titulo];
                 
                 for (const query of queries) {
-                    const fetchedData = await fetchGoogleData(query);
+                    const response = await fetchGoogleData(query);
+                    let fetchedData;
+                    if (response) {
+                      fetchedData = await response.json();
+                    }
+                    else {
+                      console.log('response', response)
+                      await new Promise(resolve => setTimeout(resolve, 60000));
+                    }
                     if (fetchedData && fetchedData.items && fetchedData.items.length > 0) {
                         // Try to find an exact title match first
                         let matched = false;
