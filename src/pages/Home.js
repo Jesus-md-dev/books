@@ -98,7 +98,6 @@ const Home = () => {
                     alt={book['titulo']}
                   />
                 </div>
-                <h5>{book['titulo']}</h5>
               </div>
             </Button>
           </Grid>
