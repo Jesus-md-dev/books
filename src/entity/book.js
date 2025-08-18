@@ -1,7 +1,7 @@
-
 /**
  * Book entity class with static parsing utility.
  */
+// No imports to order
 class Book {
     /**
      * Parses a book from data and template arrays.

@@ -1,8 +1,9 @@
+
+import { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import Grid from '@mui/material/Grid2';
-import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
-import { useEffect, useState } from 'react';
+import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
 
 
@@ -38,7 +39,7 @@ const Home = () => {
     // eslint-disable-next-line
   }, [data, loading, error]);
 
-  if (loading) {
+  if (loading && dataBooks.length === 0) {
     return <Loading />;
   }
 

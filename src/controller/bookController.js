@@ -107,70 +107,68 @@ export async function fetchData(data, loading, error, dataBooks) {
  * @returns {Promise<Array>} Enriched books array.
  */
 export async function getGoogleData(data, loading, error, dataBooks) {
-  let gridBooks = await fetchData(data, loading, error, dataBooks);
-  if (gridBooks) {
-    if (gridBooks.length === 0) {
-      gridBooks = dataBooks;
-    }
-    for (const book of gridBooks) {
-      if (book.autor === 'Desconocido' || book.imagen === placeholderCover) {
-        const fetchedOLData = await fetchGoogleData(book.titulo);
-        const secondFetchedOLData = await fetchGoogleData(`${book.titulo}.*`);
-        if (fetchedOLData && fetchedOLData.items && fetchedOLData.items.length > 0) {
-          fetchedOLData.items.forEach(item => {
-            if (
-              item.volumeInfo.title === book.titulo &&
-              (book.autor === 'Desconocido' || book.imagen === placeholderCover)
-            ) {
-              if (book.autor === 'Desconocido') {
-                book.autor = item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Desconocido';
-              }
-              if (book.imagen === placeholderCover) {
-                book.imagen = item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : placeholderCover;
-              }
-              if (book.volumeInfo.length === 0) {
-                book.volumeInfo = item.volumeInfo;
-              }
+    let gridBooks = await fetchData(data, loading, error, dataBooks);
+    if (gridBooks) {
+        if (gridBooks.length === 0) {
+            gridBooks = dataBooks;
+        }
+
+        // Helper to update book info from a Google Books API item
+        function updateBookFromItem(book, item) {
+            if (book.autor === 'Desconocido' && item.volumeInfo.authors) {
+                book.autor = item.volumeInfo.authors.join(', ');
             }
-          });
-        }
-        if (secondFetchedOLData && secondFetchedOLData.items && secondFetchedOLData.items.length > 0) {
-          secondFetchedOLData.items.forEach(item => {
-            if (
-              item.volumeInfo.title === book.titulo &&
-              (book.autor === 'Desconocido' || book.imagen === placeholderCover)
-            ) {
-              if (book.autor === 'Desconocido') {
-                book.autor = item.volumeInfo.authors ? item.volumeInfo.authors.join(', ') : 'Desconocido';
-              }
-              if (book.imagen === placeholderCover) {
-                book.imagen = item.volumeInfo.imageLinks ? item.volumeInfo.imageLinks.thumbnail : placeholderCover;
-              }
-              if (book.volumeInfo.length === 0) {
-                book.volumeInfo = item.volumeInfo;
-              }
+            if (book.imagen === placeholderCover && item.volumeInfo.imageLinks) {
+                book.imagen = item.volumeInfo.imageLinks.thumbnail;
             }
-          });
+            if (book.editorial === 'Desconocida' && item.volumeInfo.publisher) {
+                book.editorial = item.volumeInfo.publisher;
+            }
+            if (book.fecha_publicacion === '-' && item.volumeInfo.publishedDate) {
+                book.fecha_publicacion = item.volumeInfo.publishedDate;
+            }
+            if (book.descripcion === '' && item.volumeInfo.description) {
+                book.descripcion = item.volumeInfo.description;
+            }
+            if (book.n_paginas === 0 && item.volumeInfo.pageCount) {
+                book.n_paginas = item.volumeInfo.pageCount;
+            }
+            if (book.categorias.length === 0 && item.volumeInfo.categories) {
+                book.categorias = item.volumeInfo.categories;
+            }
+            if (book.volumeInfo.length === 0 && item.volumeInfo) {
+                book.volumeInfo = item.volumeInfo;
+            }
         }
-        if (secondFetchedOLData && secondFetchedOLData.items && secondFetchedOLData.items.length > 0) {
-          if (book.autor === 'Desconocido' || book.imagen === placeholderCover) {
-            const firstResult = secondFetchedOLData.items[0];
-            book.autor = firstResult.volumeInfo.authors ? firstResult.volumeInfo.authors.join(', ') : 'Desconocido';
-            book.imagen = firstResult.volumeInfo.imageLinks ? firstResult.volumeInfo.imageLinks.thumbnail : placeholderCover;
-            book.volumeInfo = firstResult.volumeInfo;
-          }
+
+        for (const book of gridBooks) {
+            if (book.autor === 'Desconocido' || book.imagen === placeholderCover) {
+                const queries = [book.titulo + '.*', book.titulo];
+                
+                for (const query of queries) {
+                    const fetchedData = await fetchGoogleData(query);
+                    if (fetchedData && fetchedData.items && fetchedData.items.length > 0) {
+                        // Try to find an exact title match first
+                        let matched = false;
+                        for (const item of fetchedData.items) {
+                            if (item.volumeInfo.title === book.titulo) {
+                                updateBookFromItem(book, item);
+                                matched = true;
+                            }
+                        }
+                        // If still missing info, use the first result
+                        if ((book.autor === 'Desconocido' || book.imagen === placeholderCover) && !matched) {
+                            updateBookFromItem(book, fetchedData.items[0]);
+                        }
+                        // If both fields are filled, break early
+                        if (book.autor !== 'Desconocido' && book.imagen !== placeholderCover) {
+                            break;
+                        }
+                    }
+                }
+            }
         }
-        if (fetchedOLData && fetchedOLData.items && fetchedOLData.items.length > 0) {
-          if (book.autor === 'Desconocido' || book.imagen === placeholderCover) {
-            const firstResult = fetchedOLData.items[0];
-            book.autor = firstResult.volumeInfo.authors ? firstResult.volumeInfo.authors.join(', ') : 'Desconocido';
-            book.imagen = firstResult.volumeInfo.imageLinks ? firstResult.volumeInfo.imageLinks.thumbnail : placeholderCover;
-            book.volumeInfo = firstResult.volumeInfo;
-          }
-        }
-      }
+        localStorage.setItem('dataBooks', JSON.stringify(gridBooks));
     }
-    localStorage.setItem('dataBooks', JSON.stringify(gridBooks));
-  }
-  return gridBooks;
+    return gridBooks;
 }

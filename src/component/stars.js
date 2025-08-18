@@ -1,4 +1,3 @@
-
 /**
  * Renders a row of star, half-star, poop, or zero icons based on the rating value.
  * @param {{ n: number|string }} props - The rating value (can be positive, negative, or zero).

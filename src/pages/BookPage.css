@@ -1,0 +1,36 @@
+.voto { 
+    padding: 4rem 4.5rem 7rem !important;
+    position: relative;
+    z-index: 0;
+}
+.voto::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('../assets/achievement.svg');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    z-index: -1;
+    pointer-events: none;
+    filter: hue-rotate(var(--hue, 0deg)) saturate(60%);
+}
+
+.media { 
+    margin-top: 3rem;
+    padding: 4rem 4.5rem 7rem !important;
+    position: relative;
+    z-index: 0;
+}
+.media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url('../assets/achievement.svg');
+    background-repeat: no-repeat;
+    background-size: contain;
+    background-position: center;
+    z-index: -1;
+    pointer-events: none;
+    filter: hue-rotate(230deg) saturate(60%);
+}

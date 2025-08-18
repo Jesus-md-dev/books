@@ -1,12 +1,12 @@
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
-import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
 import Stars from '../component/stars';
-import { useEffect, useState } from 'react';
+import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
-import { useParams } from 'react-router-dom';
-
-
+import './BookPage.css';
 
 /**
  * BookPage component displaying details and ratings for a single book.
@@ -42,11 +42,13 @@ const BookPage = () => {
         // eslint-disable-next-line
     }, [data, loading, error]);
 
+
     if (dataBooks && dataBooks.length > 0) {
         dataBooks.forEach(gridBook => {
             if (gridBook['titulo'] === id) book = gridBook;
         });
     }
+
 
     if (loading && dataBooks.length === 0) {
         return <Loading />;
@@ -60,6 +62,19 @@ const BookPage = () => {
         return <div>Libro no encontrado.</div>;
     }
 
+    // Destructure with fallback values
+    const {
+        imagen = '',
+        titulo = '',
+        descripcion = '',
+        fecha_publicacion = '-',
+        categorias = [],
+        editorial = '-',
+        n_paginas = '-',
+        media,
+        votos = []
+    } = book || {};
+
     return (
         <div className="lg:mx-[20%]">
             <Grid container spacing={2}>
@@ -67,36 +82,50 @@ const BookPage = () => {
                     <div className="flex w-auto max-h-full">
                         <img
                             className="object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950"
-                            src={book['imagen']}
-                            alt={book['titulo']}
+                            src={imagen}
+                            alt={titulo}
                         />
                     </div>
                 </Grid>
                 <Grid size={8}>
                     <div className="w-auto text-center">
-                        <h1>{book['titulo']}</h1>
+                        <h1>{titulo}</h1>
                         <p className="mt-2">
-                            {book['titulo'].slice(0, book['titulo'].slice(0, 500).lastIndexOf(' '))} ...
+                            {descripcion
+                                ? `${descripcion.slice(0, descripcion.slice(0, 500).lastIndexOf(' '))} ...`
+                                : ''}
                         </p>
-                        {book['media'] && (
-                            <div className="flex flex-col text-center text-black mt-2">
-                                <h2>Media</h2>
-                                <h3>
-                                    <Stars n={book['media']} className="ml-1" /> ({book['media']})
-                                </h3>
-                            </div>
-                        )}
+                        <p><b>Fecha de publicación:</b> {fecha_publicacion}</p>
+                        <p><b>Categorías:</b> {categorias.join(', ')}</p>
+                        <p className="mt-2">
+                            <b>Editorial:</b> {editorial} - <b>Páginas:</b> {n_paginas}
+                        </p>
                     </div>
                 </Grid>
             </Grid>
-            <Grid container spacing={6} className="justify-center mt-10">
-                {book['votos'].map(puntuation => (
-                    <Grid key={puntuation['nombre']} size="auto" className="justify-center flex p-2">
+            {media && (
+                <div className="media flex flex-col text-center text-black mt-2 ">
+                    <h1>Media</h1>
+                    <h3>
+                        <Stars n={media} className="ml-1" /> ({media})
+                    </h3>
+                </div>
+            )}
+            <Grid container className="justify-center mt-10">
+                {votos.map(puntuation => (
+                    <Grid
+                        key={puntuation['nombre']}
+                        size="auto"
+                        className={"voto justify-center flex p-2"}
+                        style={{
+                            '--hue': `${puntuation['nombre'].split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")}deg`
+                        }}
+                    >
                         <div className="text-center text-black">
-                            <h1>{puntuation['nombre']}</h1>
-                            <h3>
+                            <h3>{puntuation['nombre']}</h3>
+                            <h5>
                                 <Stars n={puntuation['voto']} /> ({puntuation['voto']})
-                            </h3>
+                            </h5>
                         </div>
                     </Grid>
                 ))}

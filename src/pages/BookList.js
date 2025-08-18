@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
-import useGoogleSheets from 'use-google-sheets';
 import Loading from '../component/loading';
+import useGoogleSheets from 'use-google-sheets';
 import { getGoogleData } from '../controller/bookController';
 
 const columns = [
@@ -11,14 +12,14 @@ const columns = [
     headerName: 'Título',
     flex: 1,
     minWidth: 200,
-    editable: true,
+    editable: false,
   },
   {
     field: 'imagen',
     headerName: 'Portada',
     flex: 1,
     minWidth: 100,
-    editable: true,
+    editable: false,
     align: 'center',
     renderCell: (params) => (
       <Button href={'/libro/' +  params.row.titulo} className='flex justify-center w-auto h-full'>
@@ -31,7 +32,7 @@ const columns = [
     headerName: 'Media',
     flex: 1,
     minWidth: 100,
-    editable: true,
+    editable: false,
     align: 'center',
   },
   {
@@ -39,7 +40,7 @@ const columns = [
     headerName: 'Autor/a',
     flex: 1,
     minWidth: 100,
-    editable: true,
+    editable: false,
   },
 ];
 
@@ -77,7 +78,7 @@ const BookList = () => {
     // eslint-disable-next-line
   }, [data, loading, error]);
 
-  if (loading) {
+  if (loading && dataBooks.length === 0) {
     return <Loading />;
   }
 
@@ -102,7 +103,6 @@ const BookList = () => {
         },
       }}
       pageSizeOptions={[10]}
-      disableRowSelectionOnClick
     />
   );
 };
