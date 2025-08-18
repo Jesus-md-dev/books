@@ -5,7 +5,6 @@ import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
 import Stars from '../component/stars';
 import useGoogleSheets from 'use-google-sheets';
-import { getGoogleData } from '../controller/bookController';
 import './BookPage.css';
 import NoService  from '../component/noService';
 import { useBooksController } from '../controller/useBooksController';
@@ -76,6 +75,18 @@ const BookPage = () => {
         votos = []
     } = book || {};
 
+    let sumSub = true;
+    votos.forEach(voto => {
+        let value = sumSub ?
+                voto.nombre.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360 + 
+                titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360 :
+                voto.nombre.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360 -
+                titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360
+        sumSub = !sumSub;
+        voto.hue = Math.abs(value) % 360 + 'deg';
+        console.log(`Rotation de ${voto.nombre}: ${voto.hue}`);
+    });
+
     return (
         <div className="lg:mx-[10%] flex flex-col items-center">
           
@@ -114,7 +125,7 @@ const BookPage = () => {
                         size="auto"
                         className={"voto justify-center flex p-2"}
                         style={{
-                            '--hue': `${puntuation['nombre'].split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")}deg`
+                            '--hue': `${puntuation['hue']}`
                         }}
                     >
                         <div className="text-center text-black">
