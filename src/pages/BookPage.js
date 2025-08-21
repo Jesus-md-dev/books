@@ -1,13 +1,12 @@
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
 import Stars from '../component/stars';
-import useGoogleSheets from 'use-google-sheets';
+import { useFetchBooks } from '../controller/bookDataController';
 import './BookPage.css';
 import NoService  from '../component/noService';
-import { useBooksController } from '../controller/useBooksController';
 
 
 /**
@@ -19,43 +18,22 @@ const BookPage = () => {
     const { id } = useParams();
     let book = null;
 
-    const { data, loading, error } = useGoogleSheets({
-        apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
-        sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
-        sheetsOptions: [{ id: 'Libros' }],
+    useFetchBooks().then((books) => {
+    setDataBooks(books);
     });
 
-    useEffect(() => {
-        const fetchBooks = async () => {
-            let cachedBooks = localStorage.getItem('dataBooks');
-            while (!cachedBooks || cachedBooks.length === 0) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            console.log('No books found, checking cache...');
-            cachedBooks = localStorage.getItem('dataBooks');
-            }
-            if (cachedBooks && dataBooks.length === 0) {
-            setDataBooks(JSON.parse(cachedBooks));
-            }
-        };
-        fetchBooks();
-        // eslint-disable-next-line
-    }, []);
+    if (dataBooks && dataBooks.length === 0) {
+    return <Loading />;
+    }
 
-    useBooksController(data, loading, error);
+    if (!dataBooks) {
+    return <NoService />;
+    }
 
     if (dataBooks && dataBooks.length > 0) {
         dataBooks.forEach(gridBook => {
             if (gridBook['titulo'] === id) book = gridBook;
         });
-    }
-
-
-    if (loading && dataBooks.length === 0) {
-        return <Loading />;
-    }
-
-    if (error) {
-        return <NoService />;
     }
 
     if (!book) {
