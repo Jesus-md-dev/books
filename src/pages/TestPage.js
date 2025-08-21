@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import Loading from '../component/loading';
 import NoService  from '../component/noService';
 import { useFetchBooks } from '../controller/bookDataController';
 import { TextField } from '@mui/material';
 import * as React from 'react'
-
+import useGoogleSheets from 'use-google-sheets';
+import { useBooksController } from '../controller/useBooksController';
 
 
 /**
@@ -14,6 +15,30 @@ import * as React from 'react'
  */
 const TestPage = () => {
   const [dataBooks, setDataBooks] = useState([]);
+
+  //  const { data, loading, error } = useGoogleSheets({
+  //   apiKey: process.env.REACT_APP_GOOGLE_API_KEY,
+  //   sheetId: process.env.REACT_APP_GOOGLE_BOOK_SHEET_ID,
+  //   sheetsOptions: [{ id: 'Libros' }],
+  // });
+
+  // useEffect(() => {
+  //   const fetchBooks = async () => {
+  //     let cachedBooks = localStorage.getItem('dataBooks');
+  //     while (!cachedBooks || cachedBooks.length === 0) {
+  //       await new Promise(resolve => setTimeout(resolve, 1000));
+  //       console.log('No books found, checking cache...');
+  //       cachedBooks = localStorage.getItem('dataBooks');
+  //     }
+  //     if (cachedBooks && dataBooks.length === 0) {
+  //       setDataBooks(JSON.parse(cachedBooks));
+  //     }
+  //   };
+  //   fetchBooks();
+  //   // eslint-disable-next-line
+  // }, []);
+
+  // useBooksController(data, loading, error);
 
   useFetchBooks().then((books) => {
     setDataBooks(books);

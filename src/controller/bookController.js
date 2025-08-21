@@ -122,7 +122,7 @@ export async function getGoogleData(data, loading, error, dataBooks) {
                 book.autor = item.volumeInfo.authors.join(', ');
             }
             if (book.imagen === placeholderCover && item.volumeInfo.imageLinks) {
-                book.imagen = item.volumeInfo.imageLinks.thumbnail;
+                book.imagen = item.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
             }
             if (book.editorial === 'Desconocida' && item.volumeInfo.publisher) {
                 book.editorial = item.volumeInfo.publisher;
