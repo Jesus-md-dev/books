@@ -7,8 +7,13 @@ import DrawBook from './pages/DrawBook';
 import Home from './pages/Home';
 import "./App.css";
 import TestPage from './pages/TestPage';
+import { prefetchDNS } from 'react-dom';
+
 
 const App = () => {
+   prefetchDNS("https://books.google.com");
+   prefetchDNS("https://sheets.googleapis.com");
+
    return (
       <>
          <Routes>

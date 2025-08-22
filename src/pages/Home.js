@@ -29,6 +29,13 @@ const Home = () => {
     }
   }, [dataBooks]);
 
+  useEffect(() => {
+    dataBooks.forEach((book) => {
+        const img = new Image();
+        img.src = book['imagen'];
+    });
+  }, [dataBooks]);
+
   if (dataBooks && dataBooks.length === 0) {
     return <Loading />;
   }
