@@ -1,6 +1,5 @@
 
-import { useState } from 'react';
-import Button from '@mui/material/Button';
+import { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
 import NoService  from '../component/noService';
@@ -17,6 +16,18 @@ const Home = () => {
   useFetchBooks().then((books) => {
     setDataBooks(books);
   });
+
+  // Preload all book images when dataBooks changes
+  useEffect(() => {
+    if (dataBooks && dataBooks.length > 0) {
+      dataBooks.forEach(book => {
+        if (book['imagen']) {
+          const img = new window.Image();
+          img.src = book['imagen'];
+        }
+      });
+    }
+  }, [dataBooks]);
 
   if (dataBooks && dataBooks.length === 0) {
     return <Loading />;
@@ -69,17 +80,19 @@ const Home = () => {
       <Grid container spacing={6} className="justify-center">
         {dataBooks.map(book => (
           <Grid key={book['id']} size="auto" className="justify-center flex p-2">
-            <Button href={"/libro/" + book['titulo']}>
+            <a href={"/libro/" + book['titulo']}>
               <div className="text-center text-black">
                 <div className="flex justify-center w-auto max-h-full">
                   <img
-                    className="my-1 h-80 lg:border-[15px] border-8 border-slate-950"
+                    className="my-1 border-4 border-slate-950"
                     src={book['imagen']}
                     alt={book['titulo']}
+                    height={100}
+                    width={150}
                   />
                 </div>
               </div>
-            </Button>
+            </a>
           </Grid>
         ))}
       </Grid>

@@ -62,17 +62,17 @@ const Navigation = () => {
                 sx={{ display: { xs: 'block', md: 'none' } }}
               >
                 <MenuItem onClick={handleCloseNavMenu}>
-                  <Button
+                  <a
                     className="menu-item font-bold text-black"
                     href="/libros"
                   >
                     <Typography sx={{ textAlign: 'center' }}>LISTA DE LIBROS</Typography>
-                  </Button>
+                  </a>
                 </MenuItem>
               </Menu>
             </Box>
-            <Button href="/">
-              <Avatar alt="Bahía Lectora logo" src="/logo.jpg" className="mr-6 w-auto" />
+            <a href="/" className='flex items-center'>
+              <img alt="Bahía Lectora logo" src="/logo.jpg" className="mr-6 rounded-full w-10 h-10" />
               <Typography
                 variant="h6"
                 noWrap
@@ -88,15 +88,15 @@ const Navigation = () => {
               >
                 Bahía Lectora
               </Typography>
-            </Button>
+            </a>
             <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-              <Button
+              <a
                 className="menu-item font-bold"
                 href="/libros"
                 sx={{ my: 2, color: 'black', display: 'block' }}
               >
                 LISTA DE LIBROS
-              </Button>
+              </a>
               {/* <Button
                 className="menu-item font-bold"
                 href="/sorteo"
