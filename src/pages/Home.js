@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
-import NoService  from '../component/noService';
+import NoService from '../component/noService';
 import { useFetchBooks } from '../controller/bookDataController';
 
 
@@ -31,8 +31,8 @@ const Home = () => {
 
   useEffect(() => {
     dataBooks.forEach((book) => {
-        const img = new Image();
-        img.src = book['imagen'];
+      const img = new Image();
+      img.src = book['imagen'];
     });
   }, [dataBooks]);
 
@@ -45,7 +45,7 @@ const Home = () => {
   }
 
   return (
-    <>
+    <div className='content-center-straight'>
       <h1 className="text-center my-3">Lectura actual</h1>
       <Grid container spacing={6} className="justify-center">
         {/* <Grid key={actual['id']} size="auto" className='justify-center flex p-2'>
@@ -87,9 +87,9 @@ const Home = () => {
       <Grid container spacing={6} className="justify-center">
         {dataBooks.map(book => (
           <Grid key={book['id']} size="auto" className="justify-center flex p-2">
-            <a href={"/libro/" + book['titulo']}>
+            <a href={"/libro/" + book['titulo']} className="flex items-center justify-center aspect-[13/19] h-60 w-auto">
               <div className="text-center text-black">
-                <div className="flex justify-center w-auto max-h-full">
+                <div className="flex justify-center">
                   <img
                     className="my-1 border-4 border-slate-950"
                     src={book['imagen']}
@@ -103,7 +103,7 @@ const Home = () => {
           </Grid>
         ))}
       </Grid>
-    </>
+    </div>
   );
 };
 

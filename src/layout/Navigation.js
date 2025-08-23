@@ -30,7 +30,7 @@ const Navigation = () => {
   return (
     <div className="header">
       <AppBar color="green_book" position="static" className="text-black">
-        <Container maxWidth="xl">
+        <div className='content-center-straight'>
           <Toolbar disableGutters>
             <Box sx={{ flexGrow: 0.453, display: { xs: 'flex', md: 'none' } }}>
               <IconButton
@@ -104,7 +104,7 @@ const Navigation = () => {
               </Button> */}
             </Box>
           </Toolbar>
-        </Container>
+        </div>
       </AppBar>
     </div>
   );

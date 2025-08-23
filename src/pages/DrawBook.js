@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Book from '../entity/book';
 import Button from '@mui/material/Button';
 import Loading from '../component/loading';
 import useGoogleSheets from 'use-google-sheets';
@@ -55,14 +54,6 @@ const DrawBook = () => {
   }
 
   let books = data[0]['data']
-
-  if (data.length > 0) {
-
-      for (let i = 1; i < data.length; i++) {
-          if (data[0][0]) books.push(Book.parseBook(data[i], data[0]));
-      }
-      books = books.filter((book) => book['id'] !== undefined)
-  }
 
   let drawList = books.map(a => ({...a}));
   drawList = getNRandomItems(drawList, 10);

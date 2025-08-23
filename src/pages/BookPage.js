@@ -6,7 +6,9 @@ import Loading from '../component/loading';
 import Stars from '../component/stars';
 import { useFetchBooks } from '../controller/bookDataController';
 import './BookPage.css';
-import NoService  from '../component/noService';
+import NoService from '../component/noService';
+import topRoto from '../assets/top.svg';
+import bottomRoto from '../assets/bottom.svg';
 
 
 /**
@@ -19,15 +21,15 @@ const BookPage = () => {
     let book = null;
 
     useFetchBooks().then((books) => {
-    setDataBooks(books);
+        setDataBooks(books);
     });
 
     if (dataBooks && dataBooks.length === 0) {
-    return <Loading />;
+        return <Loading />;
     }
 
     if (!dataBooks) {
-    return <NoService />;
+        return <NoService />;
     }
 
     if (dataBooks && dataBooks.length > 0) {
@@ -56,27 +58,31 @@ const BookPage = () => {
     let sumSub = true;
     votos.forEach(voto => {
         let value = sumSub ?
-                voto.nombre.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360 + 
-                titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360 :
-                voto.nombre.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360 -
-                titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("")% 360
+            voto.nombre.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("") % 360 +
+            titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("") % 360 :
+            voto.nombre.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("") % 360 -
+            titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("") % 360
         sumSub = !sumSub;
         voto.hue = Math.abs(value) % 360 + 'deg';
         console.log(`Rotation de ${voto.nombre}: ${voto.hue}`);
     });
 
     return (
-        <div className="lg:mx-[10%] flex flex-col items-center">
-          
-                    <div className="flex w-auto max-h-full">
-                        <img
-                            className="book-image object-contain my-1 h-full lg:border-[15px] border-8 border-slate-950"
-                            src={imagen}
-                            alt={titulo}
-                        />
-                    </div>
-              
-                    <div className="w-auto text-center">
+        <div>
+            <div className='content-center-straight flex flex-col items-center'>
+                <div className="flex w-auto max-h-full">
+                    <img
+                        className="book-image object-contain my-1 h-full border-4 border-slate-950"
+                        src={imagen}
+                        alt={titulo}
+                    />
+                </div>
+            </div>
+            <div>
+                <img className='top-roto' src={topRoto} />
+
+                <div className="w-auto text-center descripcion">
+                    <div className='content-center-straight'>
                         <h1>{titulo}</h1>
                         <p className="mt-2">
                             {descripcion}
@@ -87,34 +93,39 @@ const BookPage = () => {
                             <b>Editorial:</b> {editorial} - <b>Páginas:</b> {n_paginas}
                         </p>
                     </div>
-  
-            {media && (
-                <div className="media flex flex-col text-center text-black mt-2 ">
-                    <h1>Media</h1>
-                    <h3>
-                        <Stars n={media} className="ml-1" /> {media}
-                    </h3>
                 </div>
-            )}
-            <Grid container className="justify-evenly mt-10">
-                {votos.map(puntuation => (
-                    <Grid
-                        key={puntuation['nombre']}
-                        size="auto"
-                        className={"voto justify-center flex p-2"}
-                        style={{
-                            '--hue': `${puntuation['hue']}`
-                        }}
-                    >
-                        <div className="text-center text-black">
-                            <h3>{puntuation['nombre']}</h3>
-                            <h4>
-                                <Stars n={puntuation['voto']} /> {puntuation['voto']}
-                            </h4>
-                        </div>
-                    </Grid>
-                ))}
-            </Grid>
+
+                <img className='bottom-roto' src={bottomRoto} />
+            </div>
+            <div className='content-center-straight flex flex-col items-center'>
+                {media && (
+                    <div className="media flex flex-col text-center text-black mt-2 ">
+                        <h1>Media</h1>
+                        <h3>
+                            <Stars n={media} className="ml-1" /> {media}
+                        </h3>
+                    </div>
+                )}
+                <Grid container className="justify-evenly mt-10">
+                    {votos.map(puntuation => (
+                        <Grid
+                            key={puntuation['nombre']}
+                            size="auto"
+                            className={"voto justify-center flex p-2"}
+                            style={{
+                                '--hue': `${puntuation['hue']}`
+                            }}
+                        >
+                            <div className="text-center text-black">
+                                <h3>{puntuation['nombre']}</h3>
+                                <h4>
+                                    <Stars n={puntuation['voto']} /> {puntuation['voto']}
+                                </h4>
+                            </div>
+                        </Grid>
+                    ))}
+                </Grid>
+            </div>
         </div>
     );
 };

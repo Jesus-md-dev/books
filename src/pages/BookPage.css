@@ -1,42 +1,33 @@
 .voto { 
-    padding: 4rem 4.5rem 7rem !important;
-    position: relative;
-    z-index: 0;
+    @apply relative z-0 mt-[3rem] px-[4.5rem] pt-[4rem] pb-[7rem] !important;
 }
 .voto::before {
+    @apply absolute inset-0 bg-no-repeat bg-contain bg-center z-[-1] pointer-events-none;
     content: "";
-    position: absolute;
-    inset: 0;
     background-image: url('../assets/achievement.svg');
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
-    z-index: -1;
-    pointer-events: none;
     filter: hue-rotate(var(--hue, 0deg)) saturate(60%);
 }
 
-.media { 
-    margin-top: 3rem;
-    padding: 4rem 4.5rem 7rem;
-    position: relative;
-    z-index: 0;
+.media {
+    @apply relative z-0 mt-[3rem] px-[4.5rem] pt-[4rem] pb-[7rem];
 }
+
 .media::before {
+    @apply absolute inset-0 bg-no-repeat bg-contain bg-center z-[-1] pointer-events-none;
     content: "";
-    position: absolute;
-    inset: 0;
     background-image: url('../assets/achievement.svg');
-    background-repeat: no-repeat;
-    background-size: contain;
-    background-position: center;
-    z-index: -1;
-    pointer-events: none;
     filter: hue-rotate(230deg) saturate(60%);
 }
 
 .book-image {
-    margin-bottom: 3rem;
-    max-height: 30vh;
-    aspect-ratio: auto;
+    @apply mb-[3rem] max-h-[30vh] aspect-[auto];
+}
+
+.descripcion {
+    @apply bg-[#fbfbfb];
+}
+
+.top-roto,
+.bottom-roto {
+    @apply w-full;
 }

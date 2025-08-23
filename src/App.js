@@ -13,8 +13,6 @@ const App = () => {
 
    return (
       <>
-         <link rel="dns-prefetch" href="https://books.google.com"></link>
-         <link rel="dns-prefetch" href="https://sheets.googleapis.com"></link>
          <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/libros" element={<BookList />} />
@@ -23,6 +21,8 @@ const App = () => {
             <Route path="/test" element={<TestPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
          </Routes>
+         <link rel="dns-prefetch" href="https://books.google.com"></link>
+         <link rel="dns-prefetch" href="https://sheets.googleapis.com"></link>
       </>
    );
 };

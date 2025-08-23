@@ -12,13 +12,14 @@ const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Navigation></Navigation>
-      <Container maxWidth="xl" className='pb-24 content'>
-        <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-          <App  />
-        </BrowserRouter>
-      </Container>
+    <div maxWidth="xl" className='content'>
+      <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+        <App />
+      </BrowserRouter>
+    </div>
     <Footer></Footer>
   </React.StrictMode>
+
 );
 
 reportWebVitals();
