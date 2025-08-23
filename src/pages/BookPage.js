@@ -79,7 +79,7 @@ const BookPage = () => {
                 </div>
             </div>
             <div>
-                <img className='top-roto' src={topRoto} />
+                <img className='top-roto' src={topRoto} alt='Top decoration' />
 
                 <div className="w-auto text-center descripcion">
                     <div className='content-center-straight'>
@@ -95,7 +95,7 @@ const BookPage = () => {
                     </div>
                 </div>
 
-                <img className='bottom-roto' src={bottomRoto} />
+                <img className='bottom-roto' src={bottomRoto} alt='Bottom decoration' />
             </div>
             <div className='content-center-straight flex flex-col items-center'>
                 {media && (
