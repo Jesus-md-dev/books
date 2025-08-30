@@ -87,23 +87,25 @@ const BookList = () => {
   }
 
   return (
-    <DataGrid
-      className="bg-white"
-      rowHeight={150}
-      rows={dataBooks}
-      columns={columns}
-      initialState={{
-        pagination: {
-          paginationModel: {
-            pageSize: 10,
+    <div className="content-center-straight">
+      <DataGrid
+        className="bg-white"
+        rowHeight={150}
+        rows={dataBooks}
+        columns={columns}
+        initialState={{
+          pagination: {
+            paginationModel: {
+              pageSize: 10,
+            },
           },
-        },
-        sorting: {
-          sortModel: [{ field: 'titulo', sort: 'asc' }],
-        },
-      }}
-      pageSizeOptions={[10]}
-    />
+          sorting: {
+            sortModel: [{ field: 'titulo', sort: 'asc' }],
+          },
+        }}
+        pageSizeOptions={[10]}
+      />
+    </div>
   );
 };
 

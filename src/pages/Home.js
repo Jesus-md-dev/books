@@ -51,15 +51,15 @@ const Home = () => {
   return (
     <div>
       <div>
-          <div className='flex justify-center'><img src="/logo.webp" alt="Bahía Lectora logo" className=" rounded-full w-56"/></div>
-          <img className='top-roto' src={topRoto} alt='Top decoration' />
+          <div className='flex justify-center'><img src="/logo.webp" alt="Bahía Lectora logo" className=" rounded-full w-56" loading='eager'/></div>
+          <img className='top-roto' src={topRoto} alt='Top decoration' loading='eager'/>
           <div className='descripcion text-center'>
             <div className="content-center-straight">
               <h1 className="py-3">Conócenos</h1>
               Bahía Lectora es un club de lectura nacido en la Bahía de Cádiz, un lugar donde los libros se disfrutan mejor en compañía. Aquí compartimos lecturas, descubrimos autores y exploramos géneros diversos, siempre con la pasión por la literatura como brújula. Nuestra bitácora muestra la lectura actual y aquellas obras que ya nos han acompañado en el viaje: novelas que emocionan, relatos que hacen reflexionar y mundos que invitan a soñar. Este espacio es, ante todo, un encuentro entre lectores, un puerto donde las historias atracan para ser compartidas y donde cada página se convierte en conversación. Porque leer juntos es navegar más lejos.
             </div>
           </div>
-          <img className='bottom-roto' src={bottomRoto} alt='Bottom decoration' />
+          <img className='bottom-roto' src={bottomRoto} alt='Bottom decoration' loading='eager'/>
       </div>
       <div className='content-center-straight'>
         <p>
@@ -118,6 +118,7 @@ const Home = () => {
                       alt={book['titulo']}
                       height={100}
                       width={150}
+                      loading='lazy'
                     />
                   </div>
                 </div>
