@@ -27,7 +27,7 @@
 }
 
 #root {
-  @apply relative min-h-screen bg-repeat bg-[url('./assets/texture.jpg')];
+  @apply relative min-h-screen bg-repeat bg-[url('./assets/texture.webp')];
   font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -90,4 +90,9 @@ body {
 
 .content-center-straight {
   @apply mx-auto px-4 max-w-screen-2xl w-full;
+}
+
+.top-roto,
+.bottom-roto {
+    @apply w-full;
 }

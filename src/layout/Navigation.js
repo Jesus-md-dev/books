@@ -63,24 +63,21 @@ const Navigation = () => {
                     className="menu-item font-bold text-black"
                     href="/libros"
                   >
-                    <Typography sx={{ textAlign: 'center' }}>LISTA DE LIBROS</Typography>
+                <Typography sx={{ fontWeight: 400 }} variant="h6">
+                  Lista de Libros
+                </Typography>
                   </a>
                 </MenuItem>
               </Menu>
             </Box>
             <a href="/" className='flex items-center'>
-              <img alt="Bahía Lectora logo" src="/logo.jpg" className="mr-6 rounded-full w-10 h-10" />
+              <img alt="Bahía Lectora logo" src="/logo.webp" className="mr-6 rounded-full w-10 h-10" />
               <Typography
                 variant="h6"
-                noWrap
                 sx={{
                   mr: 2,
-                  display: { xs: 'none', md: 'flex' },
-                  fontFamily: 'monospace',
                   fontWeight: 700,
-                  letterSpacing: '.3rem',
-                  color: 'black',
-                  textDecoration: 'none',
+                  letterSpacing: '.2rem',
                 }}
               >
                 Bahía Lectora
@@ -92,7 +89,12 @@ const Navigation = () => {
                 href="/libros"
                 sx={{ my: 2, color: 'black', display: 'block' }}
               >
-                LISTA DE LIBROS
+                <Typography
+                  sx={{ fontWeight: 400 }}
+                  variant="h6"
+                >
+                  Lista de Libros
+                </Typography>
               </a>
               {/* <Button
                 className="menu-item font-bold"

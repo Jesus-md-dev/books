@@ -27,7 +27,3 @@
     @apply bg-[#fbfbfb];
 }
 
-.top-roto,
-.bottom-roto {
-    @apply w-full;
-}
