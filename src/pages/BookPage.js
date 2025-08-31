@@ -98,7 +98,7 @@ const BookPage = () => {
                 <img className='bottom-roto' src={bottomRoto} alt='Bottom decoration' />
             </div>
             <div className='content-center-straight flex flex-col items-center'>
-                {media && (
+                {media !== 0 && (
                     <div className="media flex flex-col text-center text-black mt-2 ">
                         <h1>Media</h1>
                         <h3>
