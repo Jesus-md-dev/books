@@ -30,8 +30,25 @@ const AdminPage = () => {
     sheetsOptions: [{ id: 'Actual' }],
   });
 
+
   // Effect to load cached books from localStorage
   useEffect(() => {
+    /**
+     * Loads books from localStorage cache, waits if not available.
+     */
+    async function fetchBooksFromCache() {
+      let cachedBooks = localStorage.getItem('dataBooks');
+      // Wait until books are available in cache
+      while (!cachedBooks || cachedBooks.length === 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        console.log('No books found, checking cache...');
+        cachedBooks = localStorage.getItem('dataBooks');
+      }
+      // Set state if not already set
+      if (cachedBooks && dataBooks.length === 0) {
+        setDataBooks(JSON.parse(cachedBooks));
+      }
+    }
     fetchBooksFromCache();
   }, [dataBooks.length]);
 
@@ -48,22 +65,7 @@ const AdminPage = () => {
     return <NoService />;
   }
 
-  /**
-   * Loads books from localStorage cache, waits if not available.
-   */
-  async function fetchBooksFromCache() {
-    let cachedBooks = localStorage.getItem('dataBooks');
-    // Wait until books are available in cache
-    while (!cachedBooks || cachedBooks.length === 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('No books found, checking cache...');
-      cachedBooks = localStorage.getItem('dataBooks');
-    }
-    // Set state if not already set
-    if (cachedBooks && dataBooks.length === 0) {
-      setDataBooks(JSON.parse(cachedBooks));
-    }
-  }
+
 
   /**
    * Handles form submission to update the DB via a script URL.
