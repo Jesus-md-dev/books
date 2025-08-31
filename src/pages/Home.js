@@ -13,22 +13,13 @@ import bottomRoto from '../assets/bottom.svg';
  */
 const Home = () => {
   const [dataBooks, setDataBooks] = useState([]);
+  let reversedBooks = [];
+  let actual = null;
+  let dataBooksInverted = [];
 
   useFetchBooks().then((books) => {
     setDataBooks(books);
   });
-
-  // Preload all book images when dataBooks changes
-  useEffect(() => {
-    if (dataBooks && dataBooks.length > 0) {
-      dataBooks.forEach(book => {
-        if (book['imagen']) {
-          const img = new window.Image();
-          img.src = book['imagen'];
-        }
-      });
-    }
-  }, [dataBooks]);
 
   useEffect(() => {
     dataBooks.forEach((book) => {
@@ -45,7 +36,10 @@ const Home = () => {
     return <NoService />;
   }
 
-  let actual = dataBooks[0];
+  reversedBooks = [...dataBooks].reverse();
+  actual = reversedBooks[0];
+  dataBooksInverted = reversedBooks.slice(1);
+
   actual['direccion'] = 'Bahía de Cádiz';
 
   return (
@@ -107,7 +101,7 @@ const Home = () => {
         </Grid>
         <h1 className="text-center my-5">Leidos anteriormente</h1>
         <Grid container spacing={6} className="justify-center">
-          {dataBooks.map(book => (
+          {dataBooksInverted.map(book => (
             <Grid key={book['id']} size="auto" className="justify-center flex p-2">
               <a href={"/libro/" + book['titulo']} className="flex items-center justify-center aspect-[13/19] h-60 w-auto">
                 <div className="text-center text-black">

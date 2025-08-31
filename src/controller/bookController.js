@@ -37,10 +37,12 @@ export async function fetchGoogleData(title, startIndex = 0) {
  * @param {Array} dataBooks - Existing books data.
  * @returns {Promise<Array>} Processed books array or empty array.
  */
-export async function fetchData(data, loading, error, dataBooks) {
+export async function fetchData(data, loading, error, dataActual, dataBooks) {
   const books = {};
   let gridBooks = [];
-  if (!loading && !error && data && data[0] && data[0].data) {
+  let rawGridBooks = [];
+  let order = [];
+  if (!loading && !error && data && data[0] && data[0].data && dataActual && dataActual[0] && dataActual[0].data) {
     const booksData = data[0].data;
     booksData.forEach(element => {
       const username = element[''];
@@ -68,8 +70,7 @@ export async function fetchData(data, loading, error, dataBooks) {
       });
     });
     let id = 0;
-    gridBooks = Object.keys(books)
-      .sort()
+    rawGridBooks = Object.keys(books)
       .map(key => {
         const votos = Object.entries(books[key].votos);
         return {
@@ -89,6 +90,25 @@ export async function fetchData(data, loading, error, dataBooks) {
           volumeInfo: []
         };
       });
+    data[0]['data'].forEach(element => {
+      if (Object.keys(element).length-1 === rawGridBooks.length) {
+        order = Object.keys(element).slice(1);
+      } 
+    });
+    order.push(dataActual[0].data[0].actual);
+    id = 0;
+    order.forEach(element => {
+      let book = rawGridBooks.find(b => b.titulo === element);
+      if (book) {
+        book['id'] = id;
+        gridBooks.push(book);
+      }
+      else {
+        book = { id, titulo: element, n_votos: 0, sum_votos: 0, media: 0, votos: [], imagen: placeholderCover, autor: 'Desconocido', editorial: 'Desconocida', fecha_publicacion: '-', descripcion: '', n_paginas: 0, categorias: [], volumeInfo: [] };
+        gridBooks.push(book);
+      }
+      id++;
+    });
     if (gridBooks.length !== dataBooks.length) {
       return gridBooks;
     }
@@ -106,8 +126,8 @@ export async function fetchData(data, loading, error, dataBooks) {
  * @param {Array} dataBooks - Existing books data.
  * @returns {Promise<Array>} Enriched books array.
  */
-export async function getGoogleData(data, loading, error, dataBooks) {
-    let gridBooks = await fetchData(data, loading, error, dataBooks);
+export async function getGoogleData(data, loading, error, dataActual, dataBooks) {
+    let gridBooks = await fetchData(data, loading, error, dataActual, dataBooks);
     if (gridBooks) {
         if (gridBooks.length === 0) {
             gridBooks = dataBooks;
@@ -116,8 +136,9 @@ export async function getGoogleData(data, loading, error, dataBooks) {
           localStorage.setItem('dataBooks', JSON.stringify(gridBooks));
         }
 
-        // Helper to update book info from a Google Books API item
         function updateBookFromItem(book, item) {
+            console.log("book - updateBookFromItem", book);
+
             if (book.autor === 'Desconocido' && item.volumeInfo.authors) {
                 book.autor = item.volumeInfo.authors.join(', ');
             }
@@ -145,7 +166,7 @@ export async function getGoogleData(data, loading, error, dataBooks) {
         }
 
         for (const book of gridBooks) {
-            if (book.autor === 'Desconocido' || book.imagen === placeholderCover) {
+            if (book.imagen === placeholderCover) {
                 const queries = [book.titulo + '.*', book.titulo];
                 
                 for (const query of queries) {

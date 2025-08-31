@@ -9,7 +9,7 @@ import { getGoogleData } from './bookController';
  * @param {boolean} error - Error state.
  * @returns {[Array, Function]} Array of books and setter function.
  */
-export function useBooksController(data, loading, error) {
+export function useBooksController(data, loading, error, dataActual) {
   const [dataBooks, setDataBooks] = useState([]);
 
   useEffect(() => {
@@ -17,18 +17,16 @@ export function useBooksController(data, loading, error) {
     if (cachedBooks && dataBooks.length === 0) {
       setDataBooks(JSON.parse(cachedBooks));
     }
-    // eslint-disable-next-line
   }, []);
 
   useEffect(() => {
     async function loadBooks() {
-      const books = await getGoogleData(data, loading, error, dataBooks);
+      const books = await getGoogleData(data, loading, error,dataActual, dataBooks);
       if (books && books.length > 0) {
         setDataBooks(books);
       }
     }
     loadBooks();
-    // eslint-disable-next-line
   }, [data, loading, error]);
 
   return [dataBooks, setDataBooks];
