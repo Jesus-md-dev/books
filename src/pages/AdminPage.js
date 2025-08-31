@@ -38,7 +38,7 @@ const AdminPage = () => {
       }
     };
     fetchBooks();
-  }, []);
+  }, [dataBooks.length]);
 
   useBooksController(LibrosData['data'], LibrosData['loading'], LibrosData['error'], ActualBookData['data']);
 
