@@ -17,17 +17,17 @@ export function useBooksController(data, loading, error, dataActual) {
     if (cachedBooks && dataBooks.length === 0) {
       setDataBooks(JSON.parse(cachedBooks));
     }
-  }, []);
+  }, [dataBooks.length]);
 
   useEffect(() => {
     async function loadBooks() {
-      const books = await getGoogleData(data, loading, error,dataActual, dataBooks);
+      const books = await getGoogleData(data, loading, error, dataActual, dataBooks);
       if (books && books.length > 0) {
         setDataBooks(books);
       }
     }
     loadBooks();
-  }, [data, loading, error]);
+  }, [data, loading, error, dataActual, dataBooks]);
 
   return [dataBooks, setDataBooks];
 }
