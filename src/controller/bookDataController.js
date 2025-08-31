@@ -15,10 +15,14 @@ export function useFetchBooks() {
 
   return new Promise((resolve) => {
     const cachedBooks = localStorage.getItem('dataBooks');
-    if (cachedBooks && cachedBooks.length > 0) {
-      resolve(JSON.parse(cachedBooks));
-    } else if (!loading && !error && data && data[0] && data[0].data) {
-      resolve(JSON.parse(data[0]['data'][0]['dataJson']));
+    let books = [];
+    if (!loading && !error && data && data[0] && data[0].data) {
+      books = JSON.parse(data[0]['data'][0]['dataJson']);
+      if (cachedBooks && cachedBooks.length > 0 && books.length === cachedBooks.length) {
+        resolve(JSON.parse(cachedBooks));
+      } else {
+        resolve(books);
+      }
     } else {
       resolve([]);
     }
