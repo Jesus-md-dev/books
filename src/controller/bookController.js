@@ -137,8 +137,6 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
         }
 
         function updateBookFromItem(book, item) {
-            console.log("book - updateBookFromItem", book);
-
             if (book.autor === 'Desconocido' && item.volumeInfo.authors) {
                 book.autor = item.volumeInfo.authors.join(', ');
             }
@@ -176,7 +174,6 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
                       fetchedData = await response.json();
                     }
                     else {
-                      console.log('response', response)
                       await new Promise(resolve => setTimeout(resolve, 60000));
                     }
                     if (fetchedData && fetchedData.items && fetchedData.items.length > 0) {

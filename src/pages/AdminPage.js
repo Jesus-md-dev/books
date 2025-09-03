@@ -41,7 +41,6 @@ const AdminPage = () => {
       // Wait until books are available in cache
       while (!cachedBooks || cachedBooks.length === 0) {
         await new Promise(resolve => setTimeout(resolve, 1000));
-        console.log('No books found, checking cache...');
         cachedBooks = localStorage.getItem('dataBooks');
       }
       // Set state if not already set
@@ -76,7 +75,6 @@ const AdminPage = () => {
     const scriptUrl = getScriptUrlFromForm(event);
 
     if (!scriptUrl) {
-      console.log('Script URL is required');
       return;
     }
 
@@ -113,12 +111,8 @@ const AdminPage = () => {
         }
         return res.json();
       })
-      .then(data => {
-        console.log(data);
-      })
       .catch(err => {
         console.error('There was a problem with the fetch operation:', err);
-        console.log(err);
       });
   }
 

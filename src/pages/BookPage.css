@@ -24,6 +24,6 @@
 }
 
 .descripcion {
-    @apply bg-[#fbfbfb];
+    @apply bg-[#fbfbfb] px-5;
 }
 
