@@ -98,11 +98,10 @@ const AdminPage = () => {
   function postBooksToScript(scriptUrl, books) {
     fetch(scriptUrl, {
       method: 'POST',
-      mode: 'no-cors',
       body: JSON.stringify(books),
       headers: {
         'Accept': 'application/json',
-        'Content-Type': 'application/json',
+        'Content-Type': 'text/plain',
       },
     })
       .then(res => {
