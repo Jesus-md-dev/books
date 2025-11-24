@@ -18,12 +18,13 @@ function getNRandomItems(items, n) {
 
 const DrawBook = () => {
   const [dataBooks, setDataBooks] = useState([]);
+  const booksPromise = useFetchBooks(); // Hook called at top level
   
   useEffect(() => {
-    useFetchBooks().then((books) => {
+    booksPromise.then((books) => {
       setDataBooks(books);
     });
-  }, []);
+  }, [booksPromise]);
   
   useEffect(() => {
     if (dataBooks && dataBooks.length > 0) {

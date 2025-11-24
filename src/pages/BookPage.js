@@ -18,13 +18,14 @@ import bottomRoto from '../assets/bottom.svg';
 const BookPage = () => {
     const [dataBooks, setDataBooks] = useState([]);
     const { id } = useParams();
+    const booksPromise = useFetchBooks(); // Hook called at top level
     let book = null;
 
     useEffect(() => {
-        useFetchBooks().then((books) => {
+        booksPromise.then((books) => {
             setDataBooks(books);
         });
-    }, []);
+    }, [booksPromise]);
 
     if (dataBooks && dataBooks.length === 0) {
         return <Loading />;

@@ -52,12 +52,13 @@ const columns = [
  */
 const BookList = () => {
   const [dataBooks, setDataBooks] = useState([]);
+  const booksPromise = useFetchBooks(); // Hook called at top level
 
   useEffect(() => {
-    useFetchBooks().then((books) => {
+    booksPromise.then((books) => {
       setDataBooks(books);
     });
-  }, []);
+  }, [booksPromise]);
 
   if (dataBooks && dataBooks.length === 0) {
     return <Loading />;

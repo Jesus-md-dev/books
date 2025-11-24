@@ -13,15 +13,16 @@ import bottomRoto from '../assets/bottom.svg';
  */
 const Home = () => {
   const [dataBooks, setDataBooks] = useState([]);
+  const booksPromise = useFetchBooks(); // Hook called at top level
   let reversedBooks = [];
   let actual = null;
   let dataBooksInverted = [];
 
   useEffect(() => {
-    useFetchBooks().then((books) => {
+    booksPromise.then((books) => {
       setDataBooks(books);
     });
-  }, []); // Only fetch once on mount
+  }, [booksPromise]); // Only fetch once on mount
 
   useEffect(() => {
     // Preload images in the background
