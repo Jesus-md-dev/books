@@ -17,15 +17,20 @@ const Home = () => {
   let actual = null;
   let dataBooksInverted = [];
 
-  useFetchBooks().then((books) => {
-    setDataBooks(books);
-  });
+  useEffect(() => {
+    useFetchBooks().then((books) => {
+      setDataBooks(books);
+    });
+  }, []); // Only fetch once on mount
 
   useEffect(() => {
-    dataBooks.forEach((book) => {
-      const img = new Image();
-      img.src = book['imagen'];
-    });
+    // Preload images in the background
+    if (dataBooks && dataBooks.length > 0) {
+      dataBooks.forEach((book) => {
+        const img = new Image();
+        img.src = book['imagen'];
+      });
+    }
   }, [dataBooks]);
 
   if (dataBooks && dataBooks.length === 0) {

@@ -120,6 +120,7 @@ export async function fetchData(data, loading, error, dataActual, dataBooks) {
 
 /**
  * Enrich book data with Google Books API info if missing author or image.
+ * Optimized to reduce main-thread blocking by batching requests and using setTimeout
  * @param {Array} data - Raw data array.
  * @param {boolean} loading - Loading state.
  * @param {boolean} error - Error state.
@@ -163,8 +164,15 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
             }
         }
 
-        for (const book of gridBooks) {
-            if (book.imagen === placeholderCover) {
+        // Process books with missing images in chunks to avoid blocking main thread
+        const booksNeedingData = gridBooks.filter(book => book.imagen === placeholderCover);
+        const CHUNK_SIZE = 3; // Process 3 books at a time
+        
+        for (let i = 0; i < booksNeedingData.length; i += CHUNK_SIZE) {
+            const chunk = booksNeedingData.slice(i, i + CHUNK_SIZE);
+            
+            // Process chunk in parallel
+            await Promise.all(chunk.map(async (book) => {
                 const queries = [book.titulo + '.*', book.titulo];
                 
                 for (const query of queries) {
@@ -174,7 +182,9 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
                       fetchedData = await response.json();
                     }
                     else {
-                      await new Promise(resolve => setTimeout(resolve, 60000));
+                      // Reduced wait time from 60s to 5s to avoid long blocking
+                      await new Promise(resolve => setTimeout(resolve, 5000));
+                      continue;
                     }
                     if (fetchedData && fetchedData.items && fetchedData.items.length > 0) {
                         // Try to find an exact title match first
@@ -195,8 +205,14 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
                         }
                     }
                 }
+            }));
+            
+            // Yield to main thread between chunks
+            if (i + CHUNK_SIZE < booksNeedingData.length) {
+                await new Promise(resolve => setTimeout(resolve, 0));
             }
         }
+        
         localStorage.setItem('dataBooks', JSON.stringify(gridBooks));
     }
     return gridBooks;

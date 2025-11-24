@@ -29,7 +29,10 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "save-server": "node server/saveBooksServer.js",
+    "check-icons": "node scripts/checkIcons.js",
+    "analyze": "source-map-explorer 'build/static/js/*.js' --no-border-checks"
   },
   "eslintConfig": {
     "extends": [

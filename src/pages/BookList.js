@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
 import Loading from '../component/loading';
@@ -23,7 +23,7 @@ const columns = [
     align: 'center',
     renderCell: (params) => (
       <Button href={'/libro/' +  params.row.titulo} className='flex justify-center w-auto h-full'>
-        <img alt="Portada libro" className='object-contain my-1 h-full' src={params.value}/>
+        <img alt="Portada libro" className='object-contain my-1 h-full' src={params.value} width="100" height="150" loading="lazy"/>
       </Button>
     ),
   },
@@ -53,9 +53,11 @@ const columns = [
 const BookList = () => {
   const [dataBooks, setDataBooks] = useState([]);
 
-  useFetchBooks().then((books) => {
+  useEffect(() => {
+    useFetchBooks().then((books) => {
       setDataBooks(books);
-  });
+    });
+  }, []);
 
   if (dataBooks && dataBooks.length === 0) {
     return <Loading />;

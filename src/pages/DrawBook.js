@@ -19,15 +19,19 @@ function getNRandomItems(items, n) {
 const DrawBook = () => {
   const [dataBooks, setDataBooks] = useState([]);
   
-  useFetchBooks().then((books) => {
-    setDataBooks(books);
-  });
+  useEffect(() => {
+    useFetchBooks().then((books) => {
+      setDataBooks(books);
+    });
+  }, []);
   
   useEffect(() => {
-    dataBooks.forEach((book) => {
-      const img = new Image();
-      img.src = book['imagen'];
-    });
+    if (dataBooks && dataBooks.length > 0) {
+      dataBooks.forEach((book) => {
+        const img = new Image();
+        img.src = book['imagen'];
+      });
+    }
   }, [dataBooks]);
   
   if (dataBooks && dataBooks.length === 0) {

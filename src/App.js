@@ -1,18 +1,22 @@
 // App.js
 
 import { Route, Routes, Navigate } from 'react-router-dom';
-import BookList from './pages/BookList';
-import BookPage from './pages/BookPage';
-import DrawBook from './pages/DrawBook';
-import Home from './pages/Home';
+import { lazy, Suspense } from 'react';
 import "./App.css";
-import AdminPage from './pages/AdminPage';
+import Loading from './component/loading';
+
+// Code-split routes for better performance
+const Home = lazy(() => import('./pages/Home'));
+const BookList = lazy(() => import('./pages/BookList'));
+const BookPage = lazy(() => import('./pages/BookPage'));
+const DrawBook = lazy(() => import('./pages/DrawBook'));
+const AdminPage = lazy(() => import('./pages/AdminPage'));
 
 
 const App = () => {
 
    return (
-      <>
+      <Suspense fallback={<Loading />}>
          <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/libros" element={<BookList />} />
@@ -21,9 +25,7 @@ const App = () => {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
          </Routes>
-         <link rel="dns-prefetch" href="https://books.google.com"></link>
-         <link rel="dns-prefetch" href="https://sheets.googleapis.com"></link>
-      </>
+      </Suspense>
    );
 };
 

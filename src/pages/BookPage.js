@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
 import Loading from '../component/loading';
@@ -20,9 +20,11 @@ const BookPage = () => {
     const { id } = useParams();
     let book = null;
 
-    useFetchBooks().then((books) => {
-        setDataBooks(books);
-    });
+    useEffect(() => {
+        useFetchBooks().then((books) => {
+            setDataBooks(books);
+        });
+    }, []);
 
     if (dataBooks && dataBooks.length === 0) {
         return <Loading />;
