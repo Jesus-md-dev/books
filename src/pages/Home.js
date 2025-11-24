@@ -25,12 +25,22 @@ const Home = () => {
   }, [booksPromise]); // Only fetch once on mount
 
   useEffect(() => {
-    // Preload images in the background
+    // Preload images in the background with requestIdleCallback for better performance
     if (dataBooks && dataBooks.length > 0) {
-      dataBooks.forEach((book) => {
-        const img = new Image();
-        img.src = book['imagen'];
-      });
+      const preloadImages = () => {
+        // Only preload first 5 images to reduce network load
+        dataBooks.slice(0, 5).forEach((book) => {
+          const img = new Image();
+          img.src = book['imagen'];
+        });
+      };
+      
+      // Use requestIdleCallback if available, otherwise setTimeout
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(preloadImages);
+      } else {
+        setTimeout(preloadImages, 100);
+      }
     }
   }, [dataBooks]);
 
@@ -88,7 +98,9 @@ const Home = () => {
                   title='google-maps'
                   className='h-80 max-w-xs w-full my-1 rounded-3xl'
                   src={`https://www.google.com/maps/embed/v1/place?key=***REMOVED***&q=${encodeURIComponent(actual['direccion'])}&maptype=satellite`}
-                  loading="eager"
+                  loading="lazy"
+                  width="320"
+                  height="320"
               ></iframe>
               :
               <div className='h-full m-5 flex justify-center items-center relative map'>
@@ -100,6 +112,8 @@ const Home = () => {
                       className='h-80 max-w-xs w-full my-1'
                       src={`https://www.google.com/maps/embed/v1/place?key=***REMOVED***&q=cadiz,provincia}`}
                       loading="lazy"
+                      width="320"
+                      height="320"
                   ></iframe>
               </div>
               }

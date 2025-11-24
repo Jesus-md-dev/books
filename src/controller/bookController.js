@@ -1,9 +1,14 @@
 
 /**
  * Placeholder image for books without a cover.
+ * Using a smaller, optimized placeholder image
  * @constant {string}
  */
-const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
+const placeholderCover = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="128" height="196" viewBox="0 0 128 196"%3E%3Crect width="128" height="196" fill="%23333"/%3E%3Ctext x="50%25" y="50%25" font-family="Arial" font-size="14" fill="%23fff" text-anchor="middle" dominant-baseline="middle"%3ESin portada%3C/text%3E%3C/svg%3E';
+
+// Simple in-memory cache for Google Books API responses
+const apiCache = new Map();
+const CACHE_EXPIRY = 1000 * 60 * 60; // 1 hour
 
 
 /**
@@ -14,6 +19,14 @@ const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9
  */
 export async function fetchGoogleData(title, startIndex = 0) {
   const MAX_RESULTS = 10;
+  const cacheKey = `${title}-${startIndex}`;
+  
+  // Check cache first
+  const cached = apiCache.get(cacheKey);
+  if (cached && (Date.now() - cached.timestamp < CACHE_EXPIRY)) {
+    return Promise.resolve({ json: () => Promise.resolve(cached.data) });
+  }
+  
   try {
     const response = await fetch(
       `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&startIndex=${startIndex * MAX_RESULTS}&maxResults=${MAX_RESULTS}`
@@ -21,7 +34,12 @@ export async function fetchGoogleData(title, startIndex = 0) {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return await response;
+    
+    // Cache the parsed response
+    const data = await response.json();
+    apiCache.set(cacheKey, { data, timestamp: Date.now() });
+    
+    return { json: () => Promise.resolve(data) };
   } catch (error) {
     console.error('Error fetching book data:', error);
     return undefined;
@@ -142,7 +160,13 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
                 book.autor = item.volumeInfo.authors.join(', ');
             }
             if (book.imagen === placeholderCover && item.volumeInfo.imageLinks) {
-                book.imagen = item.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
+                // Request smaller image and convert to HTTPS
+                let imageUrl = item.volumeInfo.imageLinks.thumbnail || item.volumeInfo.imageLinks.smallThumbnail;
+                if (imageUrl) {
+                    // Replace zoom parameter to get smaller images (zoom=1 is smallest)
+                    imageUrl = imageUrl.replace('http://', 'https://').replace(/zoom=\d+/, 'zoom=1');
+                    book.imagen = imageUrl;
+                }
             }
             if (book.editorial === 'Desconocida' && item.volumeInfo.publisher) {
                 book.editorial = item.volumeInfo.publisher;
@@ -166,10 +190,13 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
 
         // Process books with missing images in chunks to avoid blocking main thread
         const booksNeedingData = gridBooks.filter(book => book.imagen === placeholderCover);
-        const CHUNK_SIZE = 3; // Process 3 books at a time
         
-        for (let i = 0; i < booksNeedingData.length; i += CHUNK_SIZE) {
-            const chunk = booksNeedingData.slice(i, i + CHUNK_SIZE);
+        // Only fetch for first 10 books to reduce API calls and main-thread work
+        const limitedBooks = booksNeedingData.slice(0, 10);
+        const CHUNK_SIZE = 2; // Process 2 books at a time (reduced from 3)
+        
+        for (let i = 0; i < limitedBooks.length; i += CHUNK_SIZE) {
+            const chunk = limitedBooks.slice(i, i + CHUNK_SIZE);
             
             // Process chunk in parallel
             await Promise.all(chunk.map(async (book) => {
@@ -208,8 +235,8 @@ export async function getGoogleData(data, loading, error, dataActual, dataBooks)
             }));
             
             // Yield to main thread between chunks
-            if (i + CHUNK_SIZE < booksNeedingData.length) {
-                await new Promise(resolve => setTimeout(resolve, 0));
+            if (i + CHUNK_SIZE < limitedBooks.length) {
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
         

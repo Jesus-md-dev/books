@@ -27,11 +27,21 @@ const DrawBook = () => {
   }, [booksPromise]);
   
   useEffect(() => {
+    // Preload images in the background with requestIdleCallback
     if (dataBooks && dataBooks.length > 0) {
-      dataBooks.forEach((book) => {
-        const img = new Image();
-        img.src = book['imagen'];
-      });
+      const preloadImages = () => {
+        // Only preload first 10 for draw list
+        dataBooks.slice(0, 10).forEach((book) => {
+          const img = new Image();
+          img.src = book['imagen'];
+        });
+      };
+      
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(preloadImages);
+      } else {
+        setTimeout(preloadImages, 100);
+      }
     }
   }, [dataBooks]);
   
