@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import Button from '@mui/material/Button';
-import Loading from '../component/loading';
 import './DrawBook.css';
-import { useFetchBooks } from '../controller/bookDataController';
+import dataBooks from '../data/books.json';
 import NoService  from '../component/noService';
 
 
@@ -17,24 +16,14 @@ function getNRandomItems(items, n) {
 }
 
 const DrawBook = () => {
-  const [dataBooks, setDataBooks] = useState([]);
-  
-  useFetchBooks().then((books) => {
-    setDataBooks(books);
-  });
-  
   useEffect(() => {
     dataBooks.forEach((book) => {
       const img = new Image();
       img.src = book['imagen'];
     });
-  }, [dataBooks]);
-  
-  if (dataBooks && dataBooks.length === 0) {
-    return <Loading />;
-  }
-  
-  if (!dataBooks) {
+  }, []);
+
+  if (!dataBooks || dataBooks.length === 0) {
     return <NoService />;
   }
 

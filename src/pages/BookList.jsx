@@ -1,10 +1,8 @@
 
-import { useState } from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid } from '@mui/x-data-grid';
-import Loading from '../component/loading';
 import NoService  from '../component/noService';
-import { useFetchBooks } from '../controller/bookDataController';
+import dataBooks from '../data/books.json';
 
 const columns = [
   {
@@ -51,17 +49,7 @@ const columns = [
  * @returns {JSX.Element}
  */
 const BookList = () => {
-  const [dataBooks, setDataBooks] = useState([]);
-
-  useFetchBooks().then((books) => {
-      setDataBooks(books);
-  });
-
-  if (dataBooks && dataBooks.length === 0) {
-    return <Loading />;
-  }
-
-  if (!dataBooks) {
+  if (!dataBooks || dataBooks.length === 0) {
     return <NoService />;
   }
 

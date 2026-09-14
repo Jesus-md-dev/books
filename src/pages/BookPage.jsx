@@ -1,10 +1,8 @@
 
-import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
-import Loading from '../component/loading';
 import Stars from '../component/stars';
-import { useFetchBooks } from '../controller/bookDataController';
+import dataBooks from '../data/books.json';
 import './BookPage.css';
 import NoService from '../component/noService';
 import topRoto from '../assets/top.svg';
@@ -16,19 +14,10 @@ import bottomRoto from '../assets/bottom.svg';
  * @returns {JSX.Element}
  */
 const BookPage = () => {
-    const [dataBooks, setDataBooks] = useState([]);
     const { id } = useParams();
     let book = null;
 
-    useFetchBooks().then((books) => {
-        setDataBooks(books);
-    });
-
-    if (dataBooks && dataBooks.length === 0) {
-        return <Loading />;
-    }
-
-    if (!dataBooks) {
+    if (!dataBooks || dataBooks.length === 0) {
         return <NoService />;
     }
 

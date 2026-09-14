@@ -6,7 +6,6 @@ import BookPage from './pages/BookPage';
 import DrawBook from './pages/DrawBook';
 import Home from './pages/Home';
 import "./App.css";
-import AdminPage from './pages/AdminPage';
 
 
 const App = () => {
@@ -18,7 +17,6 @@ const App = () => {
             <Route path="/libros" element={<BookList />} />
             <Route path="/libro/:id" element={<BookPage />} />
             <Route path="/sorteo" element={<DrawBook />} />
-            <Route path="/admin" element={<AdminPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
          </Routes>
          <link rel="dns-prefetch" href="https://books.google.com"></link>

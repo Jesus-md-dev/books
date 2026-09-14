@@ -1,9 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
-import Loading from '../component/loading';
 import NoService from '../component/noService';
-import { useFetchBooks } from '../controller/bookDataController';
+import dataBooks from '../data/books.json';
 import topRoto from '../assets/top.svg';
 import bottomRoto from '../assets/bottom.svg';
 
@@ -12,27 +11,18 @@ import bottomRoto from '../assets/bottom.svg';
  * @returns {JSX.Element}
  */
 const Home = () => {
-  const [dataBooks, setDataBooks] = useState([]);
   let reversedBooks = [];
   let actual = null;
   let dataBooksInverted = [];
-
-  useFetchBooks().then((books) => {
-    setDataBooks(books);
-  });
 
   useEffect(() => {
     dataBooks.forEach((book) => {
       const img = new Image();
       img.src = book['imagen'];
     });
-  }, [dataBooks]);
+  }, []);
 
-  if (dataBooks && dataBooks.length === 0) {
-    return <Loading />;
-  }
-
-  if (!dataBooks) {
+  if (!dataBooks || dataBooks.length === 0) {
     return <NoService />;
   }
 

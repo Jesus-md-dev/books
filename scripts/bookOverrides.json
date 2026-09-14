@@ -1,0 +1,5 @@
+{
+  "Estación Once": { "query": "Station Eleven Emily St. John Mandel", "matchTitle": "Station Eleven" },
+  "La Maldición de Hill House": { "query": "The Haunting of Hill House Shirley Jackson", "matchTitle": "The Haunting of Hill House" },
+  "Gótico": { "skip": true }
+}

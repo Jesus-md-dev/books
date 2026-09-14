@@ -4,13 +4,10 @@ This file provides guidance to WARP (warp.dev) when working with code in this re
 
 ## Project Overview
 
-Bahía Lectora is a React-based book club management web application that displays book ratings, voting data, and book information from Google Sheets and Google Books API. The app features:
-
-- Book voting system with rating aggregation
-- Google Sheets integration for data storage
-- Google Books API integration for book metadata
-- Responsive UI with Material-UI components
-- Local storage caching for performance
+Bahía Lectora is a React + Vite static site for a book club. It displays the
+current book, past books, and per-user ratings. All Google Sheets / Google
+Books data is fetched **at build time** (not in the browser) and baked into
+`src/data/books.json`.
 
 ## Development Commands
 
@@ -19,99 +16,61 @@ Bahía Lectora is a React-based book club management web application that displa
 npm install
 ```
 
-### Development
-```bash
-npm start          # Start development server on localhost:3000
-npm test           # Run tests in watch mode
-npm run build      # Build production bundle
-npm run eject      # Eject from Create React App (one-way operation)
+Create a `.env` file with (no `REACT_APP_` prefix — these are build-time only, never shipped to the browser):
+```
+GOOGLE_API_KEY=your_google_api_key
+DATA_SHEET_ID=the_sheet_id_with_Data_and_Actual_tabs
+GOOGLE_BOOK_SHEET_ID=the_sheet_id_with_Libros_tab
 ```
 
-### Environment Variables Required
-Create a `.env` file with:
-```
-REACT_APP_GOOGLE_API_KEY=your_google_api_key
-REACT_APP_GOOGLE_BOOK_SHEET_ID=your_google_sheets_id
+### Development
+```bash
+npm start          # Regenerates src/data/books.json, then starts Vite dev server
+npm run build      # Regenerates src/data/books.json, then builds to /build
+npm run preview    # Serve the production build locally
+npm run fetch-books # Just regenerate src/data/books.json without starting anything
 ```
 
 ## Architecture Overview
 
-### Data Flow Architecture
-The application follows a layered architecture with clear separation of concerns:
+### Data Flow
+1. **`scripts/fetchBooksData.js`** (Node, runs via `prestart`/`prebuild`): reads
+   votes from the "Libros" tab and the current book from the "Actual" tab via
+   the Google Sheets REST API, computes per-book aggregated ratings, and
+   enriches missing covers/authors/etc. via the Google Books API. Caches
+   previously-enriched fields by title so repeat builds don't re-hit Google
+   Books for books that haven't changed. Writes `src/data/books.json`.
+2. **Pages** (`Home`, `BookList`, `BookPage`, `DrawBook`) import
+   `src/data/books.json` directly — no runtime fetch, no loading spinners, no
+   API keys in the shipped bundle.
 
-1. **Data Layer**: Google Sheets API provides raw voting data
-2. **Controller Layer**: `useBooksController` and `bookController` handle data transformation
-3. **Presentation Layer**: React components render the UI
-4. **Caching Layer**: LocalStorage provides offline capabilities
+There is **no admin page and no write path from the browser**. Editing votes
+happens directly in the "Libros"/"Actual" Google Sheet tabs. To get those
+changes live, either:
+- run a fresh `npm run build` and redeploy, or
+- (recommended) configure a Netlify Build Hook and have the sheet trigger it
+  on edit (e.g. an Apps Script `onEdit` trigger doing `UrlFetchApp.fetch`).
 
-### Key Components Structure
-
+### Key Directories
 ```
 src/
-├── pages/           # Route-level components
-├── layout/          # Navigation and Footer components  
+├── pages/           # Route-level components (.jsx)
+├── layout/          # Navigation and Footer
 ├── component/       # Reusable UI components
-├── controller/      # Business logic and data management
-├── entity/          # Data models and parsing utilities
+├── data/            # books.json — generated, do not hand-edit
+scripts/
+└── fetchBooksData.js
 ```
 
-### Data Processing Pipeline
+### Styling
+- Tailwind CSS (via `postcss.config.js` + `tailwind.config.js`)
+- Material-UI components
+- Custom CSS in `App.css` / `index.css`
 
-1. **Raw Data Ingestion**: `useGoogleSheets` hook fetches voting data from Google Sheets
-2. **Data Transformation**: `fetchData()` converts voting data into book objects with aggregated ratings
-3. **API Enrichment**: `getGoogleData()` enriches books with metadata from Google Books API
-4. **Caching Strategy**: Books are cached in localStorage for performance and offline access
-5. **Reactive Updates**: `useBooksController` manages state synchronization across components
+## Deployment (Netlify)
 
-### Core Controllers
-
-- **`useBooksController`**: React hook managing book data lifecycle and caching
-- **`bookController`**: Contains data processing functions and Google Books API integration
-- **Book Entity**: Static utility class for parsing book data from different sources
-
-### API Integration Patterns
-
-- **Google Sheets**: Processes raw voting data into aggregated ratings
-- **Google Books**: Enriches book metadata (covers, authors, descriptions) with fallback handling
-- **Rate Limiting**: Implements delays and retry logic for API calls
-- **Error Handling**: Graceful degradation when APIs are unavailable
-
-### Routing Structure
-- `/` - Home page with current and previous books
-- `/libros` - Book list in data grid format
-- `/libro/:title` - Individual book detail page
-- `/sorteo` - Book draw/lottery page (commented out)
-
-### Styling Architecture
-- **Tailwind CSS**: Utility-first styling framework
-- **Material-UI**: Component library for consistent UI elements
-- **Custom CSS**: Additional styles in App.css and index.css
-- **Responsive Design**: Mobile-first approach with breakpoint-based layouts
-
-## Development Notes
-
-### Local Storage Strategy
-- Books are cached as `dataBooks` in localStorage
-- Cache is updated when new data is fetched from Google Sheets
-- Components wait for cached data before rendering to avoid loading states
-
-### API Rate Limiting
-- Google Books API calls include delays to prevent rate limiting
-- Implements retry logic with exponential backoff
-- Uses multiple query strategies for better book matching
-
-### Error Handling Patterns
-- `NoService` component for API failures
-- `Loading` component for async operations
-- Graceful fallbacks for missing book metadata
-
-### Data Synchronization
-- Multiple components use the same controller hook
-- LocalStorage serves as the single source of truth
-- Polling mechanism ensures data freshness
-
-## Deployment Configuration
-
-- **Netlify Ready**: `_redirects` file configured for SPA routing
-- **Build Output**: Static files in `/build` directory
-- **Environment Variables**: Configure through deployment platform settings
+- Build command: `npm run build` (the `prebuild` hook regenerates the data automatically)
+- Publish directory: `build` (Vite is configured with `build.outDir: 'build'` to match)
+- Required environment variables (Site settings → Environment variables):
+  `GOOGLE_API_KEY`, `DATA_SHEET_ID`, `GOOGLE_BOOK_SHEET_ID`
+- `_redirects` in `public/` handles SPA client-side routing fallback
