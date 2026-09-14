@@ -1,6 +1,7 @@
 
 import Button from '@mui/material/Button';
-import { DataGrid } from '@mui/x-data-grid';
+import { DataGrid, GridToolbar } from '@mui/x-data-grid';
+import { esES } from '@mui/x-data-grid/locales';
 import NoService  from '../component/noService';
 import dataBooks from '../data/books.json';
 
@@ -60,6 +61,13 @@ const BookList = () => {
         rowHeight={150}
         rows={dataBooks}
         columns={columns}
+        slots={{ toolbar: GridToolbar }}
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true,
+          },
+        }}
+        localeText={esES.components.MuiDataGrid.defaultProps.localeText}
         initialState={{
           pagination: {
             paginationModel: {

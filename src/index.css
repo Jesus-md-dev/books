@@ -96,3 +96,39 @@ body {
 .bottom-roto {
     @apply w-full;
 }
+
+/* Dark mode overrides. Targets the shared utility classes already used
+   throughout the app (text-black, bg-white, etc.) instead of touching
+   every component, since this codebase applies colors inline via Tailwind
+   utilities rather than semantic classes. */
+.dark body {
+  @apply bg-gray-900;
+  background-image: linear-gradient(180deg, #111827 90%, #1f2937 100%);
+}
+
+.dark #root::before {
+  @apply bg-[#0f1f14aa];
+}
+
+.dark .footer,
+.dark .header,
+.dark .main-color {
+  @apply bg-[#1f3d27];
+  background-image: linear-gradient(45deg, #1f3d27 75%, #14251a 100%);
+}
+
+.dark .text-black {
+  @apply text-gray-100;
+}
+
+.dark h1,
+.dark h2,
+.dark h3,
+.dark h4,
+.dark h5 {
+  @apply text-gray-50;
+}
+
+.dark .bg-white {
+  @apply bg-gray-800;
+}

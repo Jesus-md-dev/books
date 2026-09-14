@@ -33,6 +33,7 @@
     "prebuild": "node scripts/fetchBooksData.js",
     "start": "vite",
     "build": "vite build",
+    "postbuild": "node scripts/generateSocialMeta.js",
     "preview": "vite preview"
   },
   "devDependencies": {

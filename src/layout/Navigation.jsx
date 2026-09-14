@@ -8,6 +8,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import { useDarkMode } from '../hooks/useDarkMode';
 import "../App.css";
 
 
@@ -17,6 +20,7 @@ import "../App.css";
  */
 const Navigation = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const [isDark, toggleDark] = useDarkMode();
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -34,7 +38,7 @@ const Navigation = () => {
             <Box sx={{ flexGrow: 0.453, display: { xs: 'flex', md: 'none' } }}>
               <IconButton
                 size="large"
-                aria-label="account of current user"
+                aria-label="Abrir menú de navegación"
                 aria-controls="menu-appbar"
                 aria-haspopup="true"
                 onClick={handleOpenNavMenu}
@@ -68,6 +72,26 @@ const Navigation = () => {
                 </Typography>
                   </a>
                 </MenuItem>
+                <MenuItem onClick={handleCloseNavMenu}>
+                  <a
+                    className="menu-item font-bold text-black"
+                    href="/estadisticas"
+                  >
+                <Typography sx={{ fontWeight: 400 }} variant="h6">
+                  Estadísticas
+                </Typography>
+                  </a>
+                </MenuItem>
+                <MenuItem onClick={handleCloseNavMenu}>
+                  <a
+                    className="menu-item font-bold text-black"
+                    href="/socios"
+                  >
+                <Typography sx={{ fontWeight: 400 }} variant="h6">
+                  Socios
+                </Typography>
+                  </a>
+                </MenuItem>
               </Menu>
             </Box>
             <a href="/" className='flex items-center'>
@@ -96,6 +120,30 @@ const Navigation = () => {
                   Lista de Libros
                 </Typography>
               </a>
+              <a
+                className="menu-item font-bold ml-4"
+                href="/estadisticas"
+                sx={{ my: 2, color: 'black', display: 'block' }}
+              >
+                <Typography
+                  sx={{ fontWeight: 400 }}
+                  variant="h6"
+                >
+                  Estadísticas
+                </Typography>
+              </a>
+              <a
+                className="menu-item font-bold ml-4"
+                href="/socios"
+                sx={{ my: 2, color: 'black', display: 'block' }}
+              >
+                <Typography
+                  sx={{ fontWeight: 400 }}
+                  variant="h6"
+                >
+                  Socios
+                </Typography>
+              </a>
               {/* <Button
                 className="menu-item font-bold"
                 href="/sorteo"
@@ -104,6 +152,14 @@ const Navigation = () => {
                 Sorteo
               </Button> */}
             </Box>
+            <IconButton
+              onClick={toggleDark}
+              color="inherit"
+              aria-label={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
+              title={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
+            >
+              {isDark ? <LightModeIcon /> : <DarkModeIcon />}
+            </IconButton>
           </Toolbar>
         </div>
       </AppBar>
