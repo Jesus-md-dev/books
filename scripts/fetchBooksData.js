@@ -135,8 +135,9 @@ function updateBookFromItem(book, item) {
   if (Array.isArray(book.volumeInfo) && item.volumeInfo) book.volumeInfo = item.volumeInfo;
 }
 
-async function fetchGoogleBooksData(title) {
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=10&key=${API_KEY}`;
+async function fetchGoogleBooksData(title, langRestrict) {
+  const langParam = langRestrict ? `&langRestrict=${langRestrict}` : '';
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=10${langParam}&key=${API_KEY}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
@@ -168,6 +169,37 @@ function isTitleRelated(a, b) {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+// Scores an item so Spanish editions with a cover win over other editions,
+// using ratingsCount only as a tie-breaker among otherwise-equal candidates.
+function scoreItem(item) {
+  const v = item.volumeInfo;
+  let score = 0;
+  if (v.language === 'es') score += 1000;
+  if (v.imageLinks) score += 100;
+  score += v.ratingsCount || 0;
+  return score;
+}
+
+function pickBest(items) {
+  return items.reduce((a, b) => (scoreItem(b) > scoreItem(a) ? b : a));
+}
+
+// True if the two author lists plausibly refer to the same person(s). Used to
+// safely adopt a Spanish edition with a different (translated) title without
+// risking picking an unrelated homonym book — only trusted once the author
+// already matches a confirmed edition.
+function authorsOverlap(knownAuthor, itemAuthors) {
+  if (!knownAuthor || !itemAuthors || itemAuthors.length === 0) return false;
+  const normalize = (s) => s.toLowerCase().split(/\s+/).filter((w) => w.length > 2);
+  const knownWords = normalize(knownAuthor);
+  return itemAuthors.some((a) => {
+    const itemWords = normalize(a);
+    // Same person if first and last name both appear, regardless of middle names/order.
+    return itemWords.length > 0 && itemWords[0] === knownWords[0]
+      && itemWords[itemWords.length - 1] === knownWords[knownWords.length - 1];
+  });
+}
+
 async function enrichBooks(gridBooks, overrides) {
   const unresolved = [];
   for (const book of gridBooks) {
@@ -193,17 +225,30 @@ async function enrichBooks(gridBooks, overrides) {
         );
         let matched = false;
         if (exactMatches.length > 0) {
-          const best = exactMatches.reduce((a, b) => ((b.volumeInfo.ratingsCount || 0) > (a.volumeInfo.ratingsCount || 0) ? b : a));
+          const best = pickBest(exactMatches);
           updateBookFromItem(book, best);
           matched = true;
+
+          // The exact-title match may be a non-Spanish edition even though a
+          // Spanish translation (with a different title) exists. Only adopt
+          // its cover once the author matches — never based on title alone.
+          if (best.volumeInfo.language !== 'es') {
+            const spanishEdition = data.items
+              .filter((item) => item.volumeInfo.language === 'es'
+                && item.volumeInfo.imageLinks
+                && authorsOverlap(book.autor, item.volumeInfo.authors))
+              .sort((a, b) => (b.volumeInfo.ratingsCount || 0) - (a.volumeInfo.ratingsCount || 0))[0];
+            if (spanishEdition) {
+              book.imagen = spanishEdition.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
+            }
+          }
         }
         if (!matched && (book.autor === 'Desconocido' || book.imagen === placeholderCover)) {
-          // No exact title match: only accept a fallback whose title is clearly the
-          // same book (substring match), never an unrelated book that merely shares
-          // a keyword — better to leave the placeholder than show the wrong cover.
+          // No exact title match: prefer a result whose title clearly relates to
+          // the book (substring match); if none does, still take the top result
+          // rather than leave the entry with no cover/data at all.
           const related = data.items.filter((item) => isTitleRelated(item.volumeInfo.title, matchTitle));
-          const fallback = related.find((item) => item.volumeInfo.imageLinks) || related[0];
-          if (fallback) updateBookFromItem(book, fallback);
+          updateBookFromItem(book, related.length > 0 ? pickBest(related) : data.items[0]);
         }
         if (book.autor !== 'Desconocido' && book.imagen !== placeholderCover) break;
       }
