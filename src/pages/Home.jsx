@@ -6,6 +6,9 @@ import dataBooks from '../data/books.json';
 import topRoto from '../assets/top.svg';
 import bottomRoto from '../assets/bottom.svg';
 
+// Google Maps Embed key: restrict it by HTTP referrer in Google Cloud, since it ships to the browser.
+const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY;
+
 /**
  * Home page component displaying current and previous books.
  * @returns {JSX.Element}
@@ -71,7 +74,7 @@ const Home = () => {
               <iframe
                   title='google-maps'
                   className='h-80 max-w-xs w-full my-1 rounded-3xl'
-                  src={`https://www.google.com/maps/embed/v1/place?key=***REMOVED***&q=${encodeURIComponent(actual['direccion'])}&maptype=satellite`}
+                  src={`https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${encodeURIComponent(actual['direccion'])}&maptype=satellite`}
                   loading="eager"
               ></iframe>
               :
@@ -82,7 +85,7 @@ const Home = () => {
                   <iframe
                       title='google-maps'
                       className='h-80 max-w-xs w-full my-1'
-                      src={`https://www.google.com/maps/embed/v1/place?key=***REMOVED***&q=cadiz,provincia}`}
+                      src={`https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=cadiz,provincia}`}
                       loading="lazy"
                   ></iframe>
               </div>

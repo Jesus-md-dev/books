@@ -23,6 +23,8 @@ DATA_SHEET_ID=the_sheet_id_with_Data_and_Actual_tabs
 GOOGLE_BOOK_SHEET_ID=the_sheet_id_with_Libros_tab
 ```
 
+The Google Maps embed on the home page also needs `VITE_GOOGLE_MAPS_EMBED_KEY` (this one is shipped to the browser, so restrict it by HTTP referrer in Google Cloud).
+
 ### Development
 ```bash
 npm start          # Regenerates src/data/books.json, then starts Vite dev server
@@ -72,5 +74,5 @@ scripts/
 - Build command: `npm run build` (the `prebuild` hook regenerates the data automatically)
 - Publish directory: `build` (Vite is configured with `build.outDir: 'build'` to match)
 - Required environment variables (Site settings → Environment variables):
-  `GOOGLE_API_KEY`, `DATA_SHEET_ID`, `GOOGLE_BOOK_SHEET_ID`
+  `GOOGLE_API_KEY`, `DATA_SHEET_ID`, `GOOGLE_BOOK_SHEET_ID`, `VITE_GOOGLE_MAPS_EMBED_KEY`
 - `_redirects` in `public/` handles SPA client-side routing fallback
