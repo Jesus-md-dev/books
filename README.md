@@ -8,6 +8,8 @@ Website for a book club, live at **[bahia-lectora.jzmarquez.com](https://bahia-l
 ![Google Sheets](https://img.shields.io/badge/Google_Sheets-34A853?style=flat-square&logo=googlesheets&logoColor=white)
 ![Netlify](https://img.shields.io/badge/Netlify-00C7B7?style=flat-square&logo=netlify&logoColor=white)
 
+![Screenshot of the Bahía Lectora home page](docs/screenshot.png)
+
 ## How it works
 
 The club manages everything in a Google Sheet, so nobody needs an admin panel:
