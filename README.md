@@ -16,7 +16,7 @@ The club manages everything in a Google Sheet, so nobody needs an admin panel:
 
 1. **At build time**, `scripts/fetchBooksData.js` reads the votes and the current book from Google Sheets, computes each book's average rating and fills in covers, authors and other details from the **Google Books API**. Results are cached by title, so unchanged books don't hit the API again.
 2. It writes everything to `src/data/books.json`, which is the initial data and supplies book details such as covers.
-3. When a visitor opens the site, a Netlify Function checks the current sheet values and refreshes ratings/current-book data if they changed. The Google API key stays on the server.
+3. When a visitor opens the site, a Netlify Function checks the current sheet values and refreshes ratings/current-book data if they changed. It reads the publicly readable sheets through Google's Visualization endpoint; the browser never contacts Sheets directly.
 
 Sheet changes appear the next time someone opens the site. A new deployment is still needed for code changes and refreshed book details from Google Books.
 
@@ -42,7 +42,8 @@ Create a `.env` file with:
 
 | Variable | Used for |
 |---|---|
-| `GOOGLE_API_KEY` | Google Sheets and Google Books APIs (build time only) |
+| `GOOGLE_SHEETS_API_KEY` | Optional; uses the official Sheets API, with the public endpoint as fallback |
+| `GOOGLE_API_KEY` | Optional; Google Books metadata enrichment during builds |
 | `DATA_SHEET_ID` | Sheet with the current book |
 | `GOOGLE_BOOK_SHEET_ID` | Sheet with the votes |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
@@ -51,4 +52,4 @@ See [WARP.md](WARP.md) for the full architecture notes.
 
 ## Deployment
 
-Netlify runs `npm run build` and publishes `build/`. Set the variables under *Site configuration → Environment variables*; `GOOGLE_API_KEY`, `DATA_SHEET_ID`, and `GOOGLE_BOOK_SHEET_ID` must also be available to Netlify Functions at runtime.
+Netlify runs `npm run build` and publishes `build/`. Set `DATA_SHEET_ID` and `GOOGLE_BOOK_SHEET_ID` under *Site configuration → Environment variables*; they must be available to Netlify Functions at runtime. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` is optional and only enriches books with Google Books metadata during builds.

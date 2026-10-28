@@ -1,24 +1,8 @@
 const cachedBooks = require('../../src/data/books.json');
+const { fetchSheetRows } = require('../../scripts/googleSheets');
 
-const API_KEY = process.env.GOOGLE_API_KEY;
 const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
 const BOOK_SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
-
-async function fetchRows(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?ranges=${encodeURIComponent(tabName)}&key=${API_KEY}`;
-  const response = await fetch(url);
-  if (!response.ok) throw new Error(`Sheets API ${response.status}`);
-  const result = await response.json();
-  const rows = result.valueRanges?.[0]?.values || [];
-  if (!rows.length) return [];
-  const headers = rows[0];
-  return rows.slice(1).filter((row) => row.length).map((row) =>
-    row.reduce((record, value, index) => {
-      record[headers[index]] = value;
-      return record;
-    }, {}),
-  );
-}
 
 function calculateBooks(voteRows, currentTitle) {
   const byTitle = new Map();
@@ -35,8 +19,12 @@ function calculateBooks(voteRows, currentTitle) {
     }
   }
 
-  const orderRow = voteRows.find((row) => Object.keys(row).length - 1 === byTitle.size);
-  const order = orderRow ? Object.keys(orderRow).slice(1) : [...byTitle.keys()];
+  const order = voteRows.sheetHeaders
+    ? voteRows.sheetHeaders.filter((title) => byTitle.has(title))
+    : [...byTitle.keys()];
+  for (const title of byTitle.keys()) {
+    if (!order.includes(title)) order.push(title);
+  }
   const titles = order.filter((title) => title !== currentTitle);
   if (!titles.includes(currentTitle)) titles.push(currentTitle);
 
@@ -57,14 +45,14 @@ function calculateBooks(voteRows, currentTitle) {
 }
 
 exports.handler = async () => {
-  if (!API_KEY || !DATA_SHEET_ID || !BOOK_SHEET_ID) {
+  if (!DATA_SHEET_ID || !BOOK_SHEET_ID) {
     return { statusCode: 503, body: 'Google Sheets no está configurado' };
   }
 
   try {
     const [voteRows, currentRows] = await Promise.all([
-      fetchRows(BOOK_SHEET_ID, 'Libros'),
-      fetchRows(DATA_SHEET_ID, 'Actual'),
+      fetchSheetRows(BOOK_SHEET_ID, 'Libros'),
+      fetchSheetRows(DATA_SHEET_ID, 'Actual'),
     ]);
     const currentTitle = currentRows[0]?.actual;
     if (!currentTitle) throw new Error('No se encontró el libro actual');

@@ -11,6 +11,7 @@ require('dotenv').config();
 
 const fs = require('fs');
 const path = require('path');
+const { fetchSheetRows } = require('./googleSheets');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
@@ -39,25 +40,6 @@ function resetBookFields(book) {
   book.n_paginas = 0;
   book.categorias = [];
   book.volumeInfo = [];
-}
-
-async function fetchSheetRows(sheetId, tabName) {
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values:batchGet?ranges=${encodeURIComponent(tabName)}&key=${API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch "${tabName}": HTTP ${res.status} - ${await res.text()}`);
-  }
-  const json = await res.json();
-  const rows = (json.valueRanges && json.valueRanges[0].values) || [];
-  if (rows.length === 0) return [];
-  const header = rows[0];
-  return rows
-    .slice(1)
-    .filter((record) => record.length > 0)
-    .map((record) => record.reduce((obj, item, index) => {
-      obj[header[index]] = item;
-      return obj;
-    }, {}));
 }
 
 function computeBooks(librosRows, actualTitle) {
@@ -97,11 +79,17 @@ function computeBooks(librosRows, actualTitle) {
     };
   });
 
-  let order = [];
-  librosRows.forEach((element) => {
-    if (Object.keys(element).length - 1 === rawGridBooks.length) {
-      order = Object.keys(element).slice(1);
-    }
+  let order = librosRows.sheetHeaders ? [...librosRows.sheetHeaders] : [];
+  if (order.length === 0) {
+    librosRows.forEach((element) => {
+      if (Object.keys(element).length - 1 === rawGridBooks.length) {
+        order = Object.keys(element).slice(1);
+      }
+    });
+  }
+  order = order.filter((title) => rawGridBooks.some((book) => book.titulo === title));
+  rawGridBooks.forEach((book) => {
+    if (!order.includes(book.titulo)) order.push(book.titulo);
   });
   order = order.filter((titulo) => titulo !== actualTitle);
   order.push(actualTitle);
@@ -141,6 +129,17 @@ async function fetchGoogleBooksData(title, langRestrict) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
+}
+
+async function googleBooksAvailable() {
+  if (!API_KEY) return false;
+  try {
+    const url = `https://www.googleapis.com/books/v1/volumes?q=isbn:9780140328721&maxResults=1&key=${API_KEY}`;
+    const response = await fetch(url);
+    return response.ok;
+  } catch (_) {
+    return false;
+  }
 }
 
 function applyCache(gridBooks, cachedBooks, overrides) {
@@ -263,8 +262,8 @@ async function enrichBooks(gridBooks, overrides) {
 }
 
 async function main() {
-  if (!API_KEY || !DATA_SHEET_ID || !BOOK_SHEET_ID) {
-    console.warn('[fetchBooksData] Faltan GOOGLE_API_KEY / DATA_SHEET_ID / GOOGLE_BOOK_SHEET_ID.');
+  if (!DATA_SHEET_ID || !BOOK_SHEET_ID) {
+    console.warn('[fetchBooksData] Faltan DATA_SHEET_ID / GOOGLE_BOOK_SHEET_ID.');
     if (!fs.existsSync(OUT_PATH)) {
       fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
       fs.writeFileSync(OUT_PATH, '[]\n');
@@ -308,8 +307,12 @@ async function main() {
     }
   }
 
-  console.log('[fetchBooksData] Enriqueciendo libros pendientes con Google Books...');
-  gridBooks = await enrichBooks(gridBooks, overrides);
+  if (await googleBooksAvailable()) {
+    console.log('[fetchBooksData] Enriqueciendo libros pendientes con Google Books...');
+    gridBooks = await enrichBooks(gridBooks, overrides);
+  } else {
+    console.log('[fetchBooksData] Google Books no está disponible; se conservan los datos de enriquecimiento disponibles.');
+  }
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(gridBooks, null, 2) + '\n');

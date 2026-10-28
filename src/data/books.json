@@ -982,14 +982,10 @@
   {
     "id": 11,
     "titulo": "Alma y los siete monstruos",
-    "n_votos": 22,
-    "sum_votos": 83,
-    "media": "3.77",
+    "n_votos": 21,
+    "sum_votos": 79.5,
+    "media": "3.79",
     "votos": [
-      {
-        "nombre": "Alba B",
-        "voto": 3.5
-      },
       {
         "nombre": "Alba P",
         "voto": 4
@@ -1125,14 +1121,10 @@
   {
     "id": 12,
     "titulo": "El coronel no tiene quien le escriba",
-    "n_votos": 20,
-    "sum_votos": 44.5,
-    "media": "2.23",
+    "n_votos": 19,
+    "sum_votos": 43,
+    "media": "2.26",
     "votos": [
-      {
-        "nombre": "Alba B",
-        "voto": 1.5
-      },
       {
         "nombre": "Alba P",
         "voto": 1.5
@@ -2211,13 +2203,21 @@
   {
     "id": 23,
     "titulo": "La paciente silenciosa",
-    "n_votos": 2,
-    "sum_votos": 8.5,
-    "media": "4.25",
+    "n_votos": 4,
+    "sum_votos": 17.5,
+    "media": "4.38",
     "votos": [
+      {
+        "nombre": "Alexa",
+        "voto": 5
+      },
       {
         "nombre": "Amanda",
         "voto": 4.5
+      },
+      {
+        "nombre": "Marta",
+        "voto": 4
       },
       {
         "nombre": "Rafa",
@@ -2282,9 +2282,9 @@
   {
     "id": 24,
     "titulo": "El lunes nos querrán",
-    "n_votos": 5,
-    "sum_votos": 21,
-    "media": "4.20",
+    "n_votos": 6,
+    "sum_votos": 24.5,
+    "media": "4.08",
     "votos": [
       {
         "nombre": "Alba P",
@@ -2297,6 +2297,10 @@
       {
         "nombre": "María",
         "voto": 3
+      },
+      {
+        "nombre": "Marta",
+        "voto": 3.5
       },
       {
         "nombre": "Pablo",
