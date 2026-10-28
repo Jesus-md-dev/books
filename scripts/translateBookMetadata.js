@@ -18,6 +18,8 @@ const CATEGORY_TRANSLATIONS = new Map([
   ['social science', 'Ciencias sociales'],
   ['psychology', 'Psicología'],
   ['religion', 'Religión'],
+  ['family & relationships', 'Familia y relaciones'],
+  ['depressed persons', 'Personas con depresión'],
 ]);
 
 function getTranslationApiKey() {
