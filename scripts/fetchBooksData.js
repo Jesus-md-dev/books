@@ -373,19 +373,29 @@ async function main() {
   }
 
   await Promise.all(gridBooks.map(async (book) => {
-    if (book.traduccion_es) return;
     const override = overrides[book.titulo];
     const volume = book.volumeInfo && !Array.isArray(book.volumeInfo) ? book.volumeInfo : {};
+    const previousTranslation = book.traduccion_es;
+    const translatedFields = previousTranslation === true
+      ? { descripcion: true, categorias: false }
+      : { ...(previousTranslation || {}) };
+    if (override?.descripcion) translatedFields.descripcion = true;
     const translated = await translateBookMetadata({
-      description: override?.descripcion ? '' : book.descripcion,
-      categories: book.categorias,
+      description: translatedFields.descripcion ? '' : book.descripcion,
+      categories: translatedFields.categorias ? [] : book.categorias,
       language: volume.language,
     });
-    if (translated.changed) {
-      if (!override?.descripcion) book.descripcion = translated.description;
-      book.categorias = translated.categories;
-      book.traduccion_es = true;
+    if (!translatedFields.descripcion && translated.descriptionComplete) {
+      translatedFields.descripcion = true;
+      if (translated.changed) book.descripcion = translated.description;
     }
+    if (!translatedFields.categorias) {
+      if (translated.changed) book.categorias = translated.categories;
+      if (translated.categoriesComplete) translatedFields.categorias = true;
+    }
+    book.traduccion_es = translatedFields.descripcion && translatedFields.categorias
+      ? true
+      : translatedFields;
   }));
 
   gridBooks.forEach((book) => {

@@ -1,6 +1,24 @@
 const TRANSLATION_API_URL = 'https://translation.googleapis.com/language/translate/v2';
 const MAX_REQUEST_CHARACTERS = 30000;
 const translationCache = new Map();
+const CATEGORY_TRANSLATIONS = new Map([
+  ['fiction', 'Ficción'],
+  ['young adult fiction', 'Ficción juvenil'],
+  ['juvenile fiction', 'Ficción infantil'],
+  ['juvenile nonfiction', 'No ficción infantil'],
+  ['nonfiction', 'No ficción'],
+  ['science fiction', 'Ciencia ficción'],
+  ['fantasy', 'Fantasía'],
+  ['history', 'Historia'],
+  ['biography & autobiography', 'Biografía y autobiografía'],
+  ['poetry', 'Poesía'],
+  ['drama', 'Teatro'],
+  ['literary criticism', 'Crítica literaria'],
+  ['literary collections', 'Colecciones literarias'],
+  ['social science', 'Ciencias sociales'],
+  ['psychology', 'Psicología'],
+  ['religion', 'Religión'],
+]);
 
 function getTranslationApiKey() {
   return process.env.GOOGLE_TRANSLATE_API_KEY || process.env.GOOGLE_API_KEY;
@@ -10,10 +28,9 @@ function isSpanish(language) {
   return String(language || '').toLowerCase().split(/[-_]/)[0] === 'es';
 }
 
-async function requestTranslations(texts, sourceLanguage, apiKey) {
+async function requestTranslations(texts, apiKey) {
   const url = new URL(TRANSLATION_API_URL);
   const body = { q: texts, target: 'es', format: 'html' };
-  if (/^[a-z]{2}$/i.test(sourceLanguage || '')) body.source = sourceLanguage;
 
   const response = await fetch(url, {
     method: 'POST',
@@ -36,54 +53,84 @@ async function requestTranslations(texts, sourceLanguage, apiKey) {
 
 async function translateBookMetadata({ description = '', categories = [], language = '' }) {
   const originalCategories = Array.isArray(categories) ? categories : [];
-  const result = { description, categories: [...originalCategories], changed: false };
+  const result = {
+    description,
+    categories: [...originalCategories],
+    changed: false,
+    descriptionComplete: !description || isSpanish(language),
+    categoriesComplete: originalCategories.length === 0,
+  };
   const apiKey = getTranslationApiKey();
-  if (!apiKey || isSpanish(language)) return result;
 
   const fields = [];
-  if (description && description.length <= MAX_REQUEST_CHARACTERS) {
+  if (description && !isSpanish(language) && description.length <= MAX_REQUEST_CHARACTERS) {
     fields.push({ key: 'description', text: description });
   }
   originalCategories.forEach((category, index) => {
-    if (typeof category === 'string' && category.trim()) {
-      fields.push({ key: `category:${index}`, text: category });
+    if (typeof category !== 'string' || !category.trim()) return;
+    const localTranslation = CATEGORY_TRANSLATIONS.get(category.trim().toLowerCase());
+    if (localTranslation) {
+      result.categories[index] = localTranslation;
+      if (localTranslation !== category) result.changed = true;
+      return;
     }
+    fields.push({ key: `category:${index}`, text: category });
   });
-  if (!fields.length || fields.reduce((total, field) => total + field.text.length, 0) > MAX_REQUEST_CHARACTERS) {
+  result.categoriesComplete = originalCategories.every((category) => (
+    typeof category !== 'string'
+    || !category.trim()
+    || CATEGORY_TRANSLATIONS.has(category.trim().toLowerCase())
+  ));
+
+  if (!apiKey || !fields.length || fields.reduce((total, field) => total + field.text.length, 0) > MAX_REQUEST_CHARACTERS) {
     return result;
   }
 
-  const cacheKeys = fields.map(({ text }) => `${language || 'auto'}\u0000${text}`);
+  const cacheKeys = fields.map(({ text }) => `auto\u0000${text}`);
   const missing = fields.filter((_, index) => !translationCache.has(cacheKeys[index]));
   if (missing.length) {
     try {
-      const translations = await requestTranslations(
-        missing.map((field) => field.text), language, apiKey,
-      );
+      const translations = await requestTranslations(missing.map((field) => field.text), apiKey);
       missing.forEach((field, index) => {
         const translated = translations[index];
-        translationCache.set(
-          `${language || 'auto'}\u0000${field.text}`,
-          isSpanish(translated.detectedSourceLanguage) || !translated.translatedText
+        translationCache.set(`auto\u0000${field.text}`, {
+          text: isSpanish(translated.detectedSourceLanguage) || !translated.translatedText
             ? field.text
             : translated.translatedText,
-        );
+          complete: isSpanish(translated.detectedSourceLanguage) || Boolean(translated.translatedText),
+        });
       });
     } catch (error) {
       // Keep the original metadata if translation is unavailable or fails.
       missing.forEach((field) => {
-        translationCache.set(`${language || 'auto'}\u0000${field.text}`, field.text);
+        translationCache.set(`auto\u0000${field.text}`, { text: field.text, complete: false });
       });
       console.warn(`[translation] Cloud Translation unavailable; keeping original metadata (${error.message})`);
     }
   }
 
   fields.forEach((field, index) => {
-    const translated = translationCache.get(cacheKeys[index]);
-    if (!translated || translated === field.text) return;
-    result.changed = true;
-    if (field.key === 'description') result.description = translated;
-    else result.categories[Number(field.key.slice('category:'.length))] = translated;
+    const translation = translationCache.get(cacheKeys[index]);
+    if (!translation) return;
+    const { text: translated, complete } = translation;
+    if (field.key === 'description') {
+      result.descriptionComplete = complete;
+      if (translated !== field.text) {
+        result.description = translated;
+        result.changed = true;
+      }
+    } else {
+      const categoryIndex = Number(field.key.slice('category:'.length));
+      result.categories[categoryIndex] = translated;
+      result.categoriesComplete = complete;
+      if (translated !== field.text) result.changed = true;
+    }
+  });
+  result.categoriesComplete = originalCategories.every((category, categoryIndex) => {
+    if (typeof category !== 'string' || !category.trim()
+      || CATEGORY_TRANSLATIONS.has(category.trim().toLowerCase())) return true;
+    const fieldIndex = fields.findIndex((field) => field.key === `category:${categoryIndex}`);
+    return fieldIndex >= 0 && Boolean(translationCache.get(cacheKeys[fieldIndex])?.complete);
   });
   return result;
 }
