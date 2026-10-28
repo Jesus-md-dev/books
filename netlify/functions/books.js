@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const cachedBooks = require('../../src/data/books.json');
 const { fetchSheetRows, getCurrentBook } = require('../../scripts/googleSheets');
 const { SHEET_ID } = require('../../scripts/sheetConfig');
@@ -13,9 +14,14 @@ const bookOverrides = require('../../scripts/bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
 const metadataCache = new Map();
+const BLOB_STORE = { name: 'bahia-lectora-data', region: 'eu-central-1', consistency: 'strong' };
 
+async function getBooksStore() {
+  const { getStore } = await import('@netlify/blobs');
+  return getStore(BLOB_STORE);
+}
 
-function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor = '') {
+function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor = '', savedBooks = cachedBooks) {
   const byTitle = new Map();
   const catalog = createCatalogMap(catalogRows);
   for (const row of voteRows) {
@@ -53,7 +59,7 @@ function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor 
   return titles.map((title, id) => {
     const matchingVoteTitle = [...byTitle.keys()].find((key) => String(key).trim() === String(title).trim());
     const votes = byTitle.get(matchingVoteTitle) || { votos: [], sum: 0 };
-    const saved = cachedBooks.find((book) => String(book.titulo).trim() === String(title).trim()) || {};
+    const saved = savedBooks.find((book) => String(book.titulo).trim() === String(title).trim()) || {};
     const count = votes.votos.length;
     return {
       ...saved,
@@ -156,16 +162,17 @@ async function searchGoogleBooks(title, catalogAuthor, override) {
   return fallback || titleFallback;
 }
 
-async function enrichMissingMetadata(books, catalogRows = []) {
+async function enrichMissingMetadata(books, catalogRows = [], { savedBooks = cachedBooks, forceRefresh = false } = {}) {
   const catalog = createCatalogMap(catalogRows);
   if (GOOGLE_BOOKS_API_KEY) await Promise.all(books.map(async (book) => {
-    const saved = cachedBooks.find((item) => String(item.titulo).trim() === String(book.titulo).trim());
+    const saved = savedBooks.find((item) => String(item.titulo).trim() === String(book.titulo).trim());
     const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
     const lookupAuthor = book.autor !== 'Desconocido' ? book.autor : catalogAuthor;
     const authorChanged = Boolean(lookupAuthor && lookupAuthor.trim() !== String(saved?.autor || '').trim());
-    if (!needsMetadata(book, authorChanged)) return;
+    const refreshBook = forceRefresh || authorChanged;
+    if (!needsMetadata(book, refreshBook)) return;
     const cacheKey = `${book.titulo}\u0000${lookupAuthor}`;
-    if (!metadataCache.has(cacheKey)) {
+    if (forceRefresh || !metadataCache.has(cacheKey)) {
       metadataCache.set(cacheKey, searchGoogleBooks(book.titulo, lookupAuthor, bookOverrides[book.titulo]).catch((error) => {
         console.warn(`[books function] Google Books lookup failed (HTTP/detail omitted): ${error.message}`);
         return null;
@@ -176,18 +183,20 @@ async function enrichMissingMetadata(books, catalogRows = []) {
 
     const volume = item.volumeInfo || {};
     if (book.autor === 'Desconocido' && volume.authors?.length) book.autor = volume.authors.join(', ');
-    const verifiedAuthor = !authorChanged || authorMatches(lookupAuthor, volume.authors);
-    if ((book.imagen === placeholderCover || authorChanged)
-      && verifiedAuthor
-      && volume.imageLinks?.thumbnail) {
-      book.imagen = volume.imageLinks.thumbnail.replace('http://', 'https://');
+    const verifiedAuthor = !lookupAuthor || authorMatches(lookupAuthor, volume.authors);
+    if (!verifiedAuthor) return;
+
+    const thumbnail = volume.imageLinks?.thumbnail || volume.imageLinks?.smallThumbnail;
+    if ((forceRefresh || book.imagen === placeholderCover || authorChanged) && thumbnail) {
+      book.imagen = thumbnail.replace('http://', 'https://');
     }
-    if (book.editorial === 'Desconocida' && volume.publisher) book.editorial = volume.publisher;
-    if (book.fecha_publicacion === '-' && volume.publishedDate) book.fecha_publicacion = volume.publishedDate;
-    if (!book.descripcion && volume.description) book.descripcion = volume.description;
-    if (!book.n_paginas && volume.pageCount) book.n_paginas = volume.pageCount;
-    if (!book.categorias?.length && volume.categories) book.categorias = volume.categories;
-    if (!book.volumeInfo || !Object.keys(book.volumeInfo).length) book.volumeInfo = volume;
+    if ((forceRefresh || book.editorial === 'Desconocida') && volume.publisher) book.editorial = volume.publisher;
+    if ((forceRefresh || book.fecha_publicacion === '-') && volume.publishedDate) book.fecha_publicacion = volume.publishedDate;
+    if ((forceRefresh || !book.descripcion) && volume.description) book.descripcion = volume.description;
+    if ((forceRefresh || !book.n_paginas) && volume.pageCount) book.n_paginas = volume.pageCount;
+    if ((forceRefresh || !book.categorias?.length) && volume.categories) book.categorias = volume.categories;
+    if (forceRefresh || !book.volumeInfo || !Object.keys(book.volumeInfo).length) book.volumeInfo = volume;
+    if (forceRefresh) book.traduccion_es = {};
     const override = bookOverrides[book.titulo];
     if (override?.imagen) book.imagen = override.imagen;
     if (override?.descripcion) book.descripcion = override.descripcion;
@@ -227,8 +236,20 @@ async function enrichMissingMetadata(books, catalogRows = []) {
   return books;
 }
 
-exports.handler = async () => {
+exports.handler = async (event = {}) => {
   try {
+    const store = await getBooksStore();
+    const storedState = await store.get('latest', { type: 'json', consistency: 'strong' });
+    const savedBooks = Array.isArray(storedState?.books) ? storedState.books : cachedBooks;
+    const forceMetadata = event.queryStringParameters?.forceMetadata === '1';
+    if (forceMetadata && !GOOGLE_BOOKS_API_KEY) {
+      return {
+        statusCode: 503,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        body: JSON.stringify({ error: 'Falta GOOGLE_API_KEY para actualizar todos los datos de Google Books.' }),
+      };
+    }
+
     const readCatalogRows = async () => {
       try {
         return await fetchSheetRows(SHEET_ID, 'Medias');
@@ -245,15 +266,31 @@ exports.handler = async () => {
     const currentBook = getCurrentBook(currentRows);
     const currentTitle = currentBook?.titulo;
     if (!currentTitle) throw new Error('No se encontró el libro actual');
+    const fingerprint = crypto.createHash('sha256').update(JSON.stringify({
+      Libros: { headers: voteRows.sheetHeaders || [], rows: voteRows },
+      Actual: { headers: currentRows.sheetHeaders || [], rows: currentRows },
+      Medias: { headers: catalogRows.sheetHeaders || [], rows: catalogRows },
+    })).digest('hex');
+
+    if (!forceMetadata && storedState?.fingerprint === fingerprint && Array.isArray(storedState.books)) {
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        body: JSON.stringify(storedState.books),
+      };
+    }
+
+    const sheetsChanged = !storedState || storedState.fingerprint !== fingerprint;
     const latest = await enrichMissingMetadata(
-      calculateBooks(voteRows, currentTitle, catalogRows, currentBook.autor),
+      calculateBooks(voteRows, currentTitle, catalogRows, currentBook.autor, savedBooks),
       catalogRows,
+      { savedBooks, forceRefresh: forceMetadata || sheetsChanged },
     );
-    const changed = JSON.stringify(latest) !== JSON.stringify(cachedBooks);
+    await store.setJSON('latest', { fingerprint, books: latest, updatedAt: new Date().toISOString() });
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-      body: JSON.stringify(changed ? latest : cachedBooks),
+      body: JSON.stringify(latest),
     };
   } catch (error) {
     console.error('[books function]', error);

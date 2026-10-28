@@ -75,12 +75,12 @@ function adminPage() {
     const status = document.getElementById('status');
     button.addEventListener('click', async () => {
       button.disabled = true;
-      status.textContent = 'Consultando Google Sheets…';
+      status.textContent = 'Actualizando libros y metadatos…';
       try {
         const response = await fetch('/admin/refresh', { method: 'POST', credentials: 'same-origin' });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || 'No se pudo actualizar.');
-        status.textContent = 'Actualización completada: ' + result.books + ' libros · ' + new Date(result.updatedAt).toLocaleTimeString('es-ES');
+        status.textContent = 'Datos actualizados para ' + result.books + ' libros · ' + new Date(result.updatedAt).toLocaleTimeString('es-ES');
       } catch (error) {
         status.textContent = error.message || 'No se pudo actualizar. Inténtalo de nuevo.';
       } finally {
@@ -103,12 +103,21 @@ exports.handler = async (event) => {
   if (!isAuthorized(event)) return unauthorized();
 
   if (event.httpMethod === 'POST') {
-    const result = await refreshBooks(event);
+    const result = await refreshBooks({
+      ...event,
+      queryStringParameters: { ...event.queryStringParameters, forceMetadata: '1' },
+    });
     if (result.statusCode !== 200) {
+      let error = 'No se pudieron consultar las hojas de Google Sheets.';
+      try {
+        error = JSON.parse(result.body).error || error;
+      } catch {
+        // Keep the generic message if the books function returns plain text.
+      }
       return {
         statusCode: result.statusCode,
         headers: { ...securityHeaders, 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ error: 'No se pudieron consultar las hojas de Google Sheets.' }),
+        body: JSON.stringify({ error }),
       };
     }
 

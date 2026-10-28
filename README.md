@@ -18,7 +18,7 @@ The club manages everything in a Google Sheet, so nobody needs an admin panel:
 2. It writes everything to `src/data/books.json`, which is the initial data and supplies book details such as covers.
 3. A Netlify Function checks the `Libros`, `Actual` and `Medias` tabs when a visitor opens the site and once per minute while it stays open. It reads the publicly readable sheets through Google's Visualization endpoint; the browser never contacts Sheets directly.
 
-Changes to those sheets appear within about a minute on an open page, or on the next visit. A new deployment is needed for code changes and refreshed book details from Google Books.
+Changes to those sheets appear within about a minute on an open page, or on the next visit. The latest complete book data is stored in Netlify Blobs so it is shared across visits and deployments. Changes in the sheets automatically refresh the site data; changes to titles/authors also refresh Google Books metadata when `GOOGLE_API_KEY` is configured.
 
 ## Features
 
@@ -49,10 +49,11 @@ Create a `.env` file with:
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Required in Netlify to protect `/admin` with HTTP Basic Auth |
 
-The private `/admin` page has a button to query the latest data from all three
-book tabs immediately. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` in Netlify's
-environment variables; the page and its refresh endpoint return an error until
-both are configured.
+The private `/admin` page has a button to force a refresh of all book metadata
+from Google Books and save the complete result for every visitor. Set
+`ADMIN_USERNAME` and `ADMIN_PASSWORD` in Netlify's environment variables; the
+page returns an error until both are configured. `GOOGLE_API_KEY` is also
+required for the forced metadata refresh.
 
 The existing `Medias` tab should have three columns, in this order: `Título`, `Autor`, `Media`. Add one book per row by entering its title and author; `Media` is calculated from the votes. The title identifies the book and should match its column in `Libros`. The `Libros` headers and average formulas are prefilled for up to 49 books, so no second title entry or extra tab is needed. ISBN is not required. If an author is missing, the site falls back to a title-based Google Books lookup.
 
