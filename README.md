@@ -45,7 +45,8 @@ Create a `.env` file with:
 | `GOOGLE_SHEETS_API_KEY` | Optional; uses the official Sheets API, with the public endpoint as fallback |
 | `GOOGLE_API_KEY` | Optional; Google Books metadata enrichment during builds and when new titles load |
 | `GOOGLE_TRANSLATE_API_KEY` | Optional; translates imported descriptions and unrecognized categories into Spanish. Common Google Books categories are translated locally. If omitted, `GOOGLE_API_KEY` is reused |
-| `BAHIA_SHEETS_ID` | Optional; spreadsheet ID. Defaults to the original spreadsheet |
+| `GOOGLE_BOOK_SHEET_ID` | Spreadsheet ID used by builds and the live function |
+| `BAHIA_SHEETS_ID` | Legacy spreadsheet ID; used only if `GOOGLE_BOOK_SHEET_ID` is unset |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Required in Netlify to protect `/admin` with HTTP Basic Auth |
 
@@ -60,4 +61,4 @@ See [WARP.md](WARP.md) for the full architecture notes.
 
 ## Deployment
 
-Netlify runs `npm run build` and publishes `build/`. The build and Netlify Function use the same spreadsheet, defaulting to the original spreadsheet; set `BAHIA_SHEETS_ID` under *Site configuration → Environment variables* only to override it. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime. Common categories are translated locally; enable Cloud Translation and set `GOOGLE_TRANSLATE_API_KEY` to translate descriptions and other category labels. The Google Books key is used as a fallback.
+Netlify runs `npm run build` and publishes `build/`. The build and Netlify Function use the same spreadsheet; set `GOOGLE_BOOK_SHEET_ID` under *Site configuration → Environment variables* to select it. `BAHIA_SHEETS_ID` is supported as a legacy fallback. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime. Common categories are translated locally; enable Cloud Translation and set `GOOGLE_TRANSLATE_API_KEY` to translate descriptions and other category labels. The Google Books key is used as a fallback.

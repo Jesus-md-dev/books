@@ -2,6 +2,12 @@
   "Estación Once": { "query": "Station Eleven Emily St. John Mandel", "matchTitle": "Station Eleven" },
   "La Maldición de Hill House": { "query": "The Haunting of Hill House Shirley Jackson", "matchTitle": "The Haunting of Hill House" },
   "Piranesi": { "query": "Piranesi Susanna Clarke", "matchTitle": "Piranesi" },
+  "Babel": {
+    "query": "isbn:9788419266286",
+    "matchTitle": "Babel",
+    "imagen": "https://www.editorialhidra.com/media/hidra/images/cover-142373.jpg",
+    "refreshMetadata": true
+  },
   "Atlas de geografía humana": {
     "query": "Atlas de geografía humana Almudena Grandes",
     "matchTitle": "Atlas de geografía humana",

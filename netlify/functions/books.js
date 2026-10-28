@@ -161,7 +161,8 @@ async function enrichMissingMetadata(books, catalogRows = []) {
     const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
     const lookupAuthor = book.autor !== 'Desconocido' ? book.autor : catalogAuthor;
     const authorChanged = Boolean(lookupAuthor && lookupAuthor.trim() !== String(saved?.autor || '').trim());
-    if (!needsMetadata(book, authorChanged)) return;
+    const refreshBook = authorChanged || Boolean(bookOverrides[book.titulo]?.refreshMetadata);
+    if (!needsMetadata(book, refreshBook)) return;
     const cacheKey = `${book.titulo}\u0000${lookupAuthor}`;
     if (!metadataCache.has(cacheKey)) {
       metadataCache.set(cacheKey, searchGoogleBooks(book.titulo, lookupAuthor, bookOverrides[book.titulo]).catch((error) => {
@@ -178,16 +179,16 @@ async function enrichMissingMetadata(books, catalogRows = []) {
     if (!verifiedAuthor) return;
 
     const thumbnail = volume.imageLinks?.thumbnail || volume.imageLinks?.smallThumbnail;
-    if ((book.imagen === placeholderCover || authorChanged) && thumbnail) {
+    if ((book.imagen === placeholderCover || refreshBook) && thumbnail) {
       book.imagen = thumbnail.replace('http://', 'https://');
     }
-    if ((authorChanged || book.editorial === 'Desconocida') && volume.publisher) book.editorial = volume.publisher;
-    if ((authorChanged || book.fecha_publicacion === '-') && volume.publishedDate) book.fecha_publicacion = volume.publishedDate;
-    if ((authorChanged || !book.descripcion) && volume.description) book.descripcion = volume.description;
-    if ((authorChanged || !book.n_paginas) && volume.pageCount) book.n_paginas = volume.pageCount;
-    if ((authorChanged || !book.categorias?.length) && volume.categories) book.categorias = volume.categories;
-    if (authorChanged || !book.volumeInfo || !Object.keys(book.volumeInfo).length) book.volumeInfo = volume;
-    if (authorChanged) book.traduccion_es = {};
+    if ((refreshBook || book.editorial === 'Desconocida') && volume.publisher) book.editorial = volume.publisher;
+    if ((refreshBook || book.fecha_publicacion === '-') && volume.publishedDate) book.fecha_publicacion = volume.publishedDate;
+    if ((refreshBook || !book.descripcion) && volume.description) book.descripcion = volume.description;
+    if ((refreshBook || !book.n_paginas) && volume.pageCount) book.n_paginas = volume.pageCount;
+    if ((refreshBook || !book.categorias?.length) && volume.categories) book.categorias = volume.categories;
+    if (refreshBook || !book.volumeInfo || !Object.keys(book.volumeInfo).length) book.volumeInfo = volume;
+    if (refreshBook) book.traduccion_es = {};
     const override = bookOverrides[book.titulo];
     if (override?.imagen) book.imagen = override.imagen;
     if (override?.descripcion) book.descripcion = override.descripcion;

@@ -135,15 +135,17 @@ function computeBooks(librosRows, actualTitle, catalogRows = [], actualAuthor = 
   return gridBooks;
 }
 
-function updateBookFromItem(book, item) {
+function updateBookFromItem(book, item, refreshMetadata = false) {
   if (book.autor === 'Desconocido' && item.volumeInfo.authors) book.autor = item.volumeInfo.authors.join(', ');
-  if (book.imagen === placeholderCover && item.volumeInfo.imageLinks) book.imagen = item.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
-  if (book.editorial === 'Desconocida' && item.volumeInfo.publisher) book.editorial = item.volumeInfo.publisher;
-  if (book.fecha_publicacion === '-' && item.volumeInfo.publishedDate) book.fecha_publicacion = item.volumeInfo.publishedDate;
-  if (book.descripcion === '' && item.volumeInfo.description) book.descripcion = item.volumeInfo.description;
-  if (book.n_paginas === 0 && item.volumeInfo.pageCount) book.n_paginas = item.volumeInfo.pageCount;
-  if (book.categorias.length === 0 && item.volumeInfo.categories) book.categorias = item.volumeInfo.categories;
-  if (Array.isArray(book.volumeInfo) && item.volumeInfo) book.volumeInfo = item.volumeInfo;
+  if ((refreshMetadata || book.imagen === placeholderCover) && item.volumeInfo.imageLinks?.thumbnail) {
+    book.imagen = item.volumeInfo.imageLinks.thumbnail.replace('http://', 'https://');
+  }
+  if ((refreshMetadata || book.editorial === 'Desconocida') && item.volumeInfo.publisher) book.editorial = item.volumeInfo.publisher;
+  if ((refreshMetadata || book.fecha_publicacion === '-') && item.volumeInfo.publishedDate) book.fecha_publicacion = item.volumeInfo.publishedDate;
+  if ((refreshMetadata || book.descripcion === '') && item.volumeInfo.description) book.descripcion = item.volumeInfo.description;
+  if ((refreshMetadata || book.n_paginas === 0) && item.volumeInfo.pageCount) book.n_paginas = item.volumeInfo.pageCount;
+  if ((refreshMetadata || book.categorias.length === 0) && item.volumeInfo.categories) book.categorias = item.volumeInfo.categories;
+  if ((refreshMetadata || Array.isArray(book.volumeInfo)) && item.volumeInfo) book.volumeInfo = item.volumeInfo;
 }
 
 async function fetchGoogleBooksData(title, langRestrict) {
@@ -238,9 +240,10 @@ async function enrichBooks(gridBooks, overrides, catalogRows = []) {
   for (const book of gridBooks) {
     const override = overrides[book.titulo];
     if (override && override.skip) continue;
-    if (book.imagen !== placeholderCover) continue;
+    const refreshMetadata = Boolean(override?.refreshMetadata);
+    if (book.imagen !== placeholderCover && !refreshMetadata) continue;
     const matchTitle = (override && override.matchTitle) || book.titulo;
-    const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
+    const catalogAuthor = getCatalogAuthor(book.titulo, catalog) || book.autor;
     for (const query of googleBooksQueries(book.titulo, catalogAuthor, override)) {
       let data;
       try {
@@ -278,7 +281,7 @@ async function enrichBooks(gridBooks, overrides, catalogRows = []) {
         let matched = false;
         if (exactMatches.length > 0) {
           const best = pickBest(exactMatches);
-          updateBookFromItem(book, best);
+          updateBookFromItem(book, best, refreshMetadata);
           matched = true;
 
           // The exact-title match may be a non-Spanish edition even though a
@@ -295,12 +298,12 @@ async function enrichBooks(gridBooks, overrides, catalogRows = []) {
             }
           }
         }
-        if (!matched && (book.autor === 'Desconocido' || book.imagen === placeholderCover)) {
+        if (!matched && (book.autor === 'Desconocido' || book.imagen === placeholderCover || refreshMetadata)) {
           // No exact title match: prefer a result whose title clearly relates to
           // the book (substring match); if none does, still take the top result
           // rather than leave the entry with no cover/data at all.
           const related = authorMatchesItems.filter((item) => isTitleRelated(item.volumeInfo.title, matchTitle));
-          updateBookFromItem(book, related.length > 0 ? pickBest(related) : authorMatchesItems[0]);
+          updateBookFromItem(book, related.length > 0 ? pickBest(related) : authorMatchesItems[0], refreshMetadata);
         }
         if (book.autor !== 'Desconocido' && book.imagen !== placeholderCover) break;
       }
