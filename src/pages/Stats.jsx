@@ -44,6 +44,23 @@ const Stats = () => {
         ))}
       </Grid>
 
+      {stats.categorias.length > 0 && (
+        <section className="mx-auto mb-10 max-w-3xl px-4 text-center" aria-labelledby="category-breakdown-title">
+          <h2 id="category-breakdown-title" className="mb-2 text-xl font-bold">Libros por categorÃ­a</h2>
+          <p className="mb-4 text-sm text-gray-600">
+            {stats.librosConCategoria} de {stats.totalLibros} libros tienen categorÃ­a.
+          </p>
+          <ul className="flex flex-wrap justify-center gap-3">
+            {stats.categorias.map(({ nombre, count }) => (
+              <li key={nombre} className="rounded-full bg-white px-4 py-2 shadow">
+                <span className="font-semibold">{nombre}</span>{' '}
+                <span aria-label={`${count} libros`}>({count})</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <Grid container spacing={6} className="justify-center mb-10">
         {stats.mejorValorado && (
           <Grid size="auto" className="text-center text-black">

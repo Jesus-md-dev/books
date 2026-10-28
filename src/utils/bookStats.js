@@ -13,13 +13,25 @@ export function computeClubStats(books) {
     ? allVotes.reduce((sum, v) => sum + v, 0) / allVotes.length
     : 0;
 
-  const categoryCounts = {};
+  const categoryCounts = new Map();
+  let librosConCategoria = 0;
   books.forEach((b) => {
-    (b.categorias || []).forEach((cat) => {
-      categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+    const categories = new Map();
+    (b.categorias || []).forEach((rawCategory) => {
+      if (typeof rawCategory !== 'string' || !rawCategory.trim()) return;
+      const category = rawCategory.trim();
+      const key = category.toLocaleLowerCase();
+      if (!categories.has(key)) categories.set(key, category);
+    });
+    if (categories.size) librosConCategoria += 1;
+    categories.forEach((category, key) => {
+      const existing = categoryCounts.get(key);
+      categoryCounts.set(key, { nombre: existing?.nombre || category, count: (existing?.count || 0) + 1 });
     });
   });
-  const categoriaTop = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+  const categorias = [...categoryCounts.values()].sort((a, b) => (
+    b.count - a.count || a.nombre.localeCompare(b.nombre, 'es')
+  ));
 
   const byMedia = [...ratedBooks].sort((a, b) => parseFloat(b.media) - parseFloat(a.media));
   const mejorValorado = byMedia[0] || null;
@@ -37,7 +49,9 @@ export function computeClubStats(books) {
     totalLibros: books.length,
     librosValorados: ratedBooks.length,
     mediaGeneral,
-    categoriaTop: categoriaTop ? { nombre: categoriaTop[0], count: categoriaTop[1] } : null,
+    categoriaTop: categorias[0] || null,
+    categorias,
+    librosConCategoria,
     mejorValorado,
     peorValorado,
     socioMasActivo: socioMasActivo ? { nombre: socioMasActivo[0], count: socioMasActivo[1] } : null,
