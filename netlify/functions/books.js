@@ -78,11 +78,12 @@ function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor 
   });
 }
 
-function needsMetadata(book) {
+function needsMetadata(book, refreshForAuthorChange = false) {
   return book.imagen === placeholderCover
     || book.autor === 'Desconocido'
     || !book.descripcion
-    || book.editorial === 'Desconocida';
+    || book.editorial === 'Desconocida'
+    || refreshForAuthorChange;
 }
 
 function isTitleRelated(resultTitle, bookTitle) {
@@ -157,11 +158,15 @@ async function searchGoogleBooks(title, catalogAuthor, override) {
 
 async function enrichMissingMetadata(books, catalogRows = []) {
   const catalog = createCatalogMap(catalogRows);
-  if (GOOGLE_BOOKS_API_KEY) await Promise.all(books.filter(needsMetadata).map(async (book) => {
+  if (GOOGLE_BOOKS_API_KEY) await Promise.all(books.map(async (book) => {
+    const saved = cachedBooks.find((item) => String(item.titulo).trim() === String(book.titulo).trim());
     const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
-    const cacheKey = `${book.titulo}\u0000${catalogAuthor}`;
+    const lookupAuthor = book.autor !== 'Desconocido' ? book.autor : catalogAuthor;
+    const authorChanged = Boolean(lookupAuthor && lookupAuthor.trim() !== String(saved?.autor || '').trim());
+    if (!needsMetadata(book, authorChanged)) return;
+    const cacheKey = `${book.titulo}\u0000${lookupAuthor}`;
     if (!metadataCache.has(cacheKey)) {
-      metadataCache.set(cacheKey, searchGoogleBooks(book.titulo, catalogAuthor, bookOverrides[book.titulo]).catch((error) => {
+      metadataCache.set(cacheKey, searchGoogleBooks(book.titulo, lookupAuthor, bookOverrides[book.titulo]).catch((error) => {
         console.warn(`[books function] Google Books lookup failed (HTTP/detail omitted): ${error.message}`);
         return null;
       }));
@@ -171,7 +176,10 @@ async function enrichMissingMetadata(books, catalogRows = []) {
 
     const volume = item.volumeInfo || {};
     if (book.autor === 'Desconocido' && volume.authors?.length) book.autor = volume.authors.join(', ');
-    if (book.imagen === placeholderCover && volume.imageLinks?.thumbnail) {
+    const verifiedAuthor = !authorChanged || authorMatches(lookupAuthor, volume.authors);
+    if ((book.imagen === placeholderCover || authorChanged)
+      && verifiedAuthor
+      && volume.imageLinks?.thumbnail) {
       book.imagen = volume.imageLinks.thumbnail.replace('http://', 'https://');
     }
     if (book.editorial === 'Desconocida' && volume.publisher) book.editorial = volume.publisher;
