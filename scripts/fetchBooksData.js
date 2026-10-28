@@ -19,6 +19,7 @@ const {
   getCatalogAuthor,
   googleBooksQueries,
 } = require('./bookCatalog');
+const { translateBookMetadata } = require('./translateBookMetadata');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 
@@ -243,19 +244,30 @@ async function enrichBooks(gridBooks, overrides, catalogRows = []) {
     for (const query of googleBooksQueries(book.titulo, catalogAuthor, override)) {
       let data;
       try {
-        data = await fetchGoogleBooksData(query);
+        data = await fetchGoogleBooksData(query, 'es');
+        if (!data?.items?.length) data = await fetchGoogleBooksData(query);
       } catch (err) {
         console.warn(`  ! Google Books falló para "${query}": ${err.message}`);
         await new Promise((r) => setTimeout(r, 1500));
         continue;
       }
       if (data && data.items && data.items.length > 0) {
-        const matchingAuthors = catalogAuthor
+        let matchingAuthors = catalogAuthor
           ? data.items.filter((item) => authorMatches(catalogAuthor, item.volumeInfo.authors))
           : data.items;
         const queryTargetsAuthor = catalogAuthor
           && (query.toLocaleLowerCase().includes('inauthor:')
             || query.toLocaleLowerCase().includes(catalogAuthor.toLocaleLowerCase()));
+        if (queryTargetsAuthor && matchingAuthors.length === 0 && data.items.some((item) => item.volumeInfo.language === 'es')) {
+          try {
+            data = await fetchGoogleBooksData(query);
+            matchingAuthors = catalogAuthor
+              ? (data.items || []).filter((item) => authorMatches(catalogAuthor, item.volumeInfo.authors))
+              : (data.items || []);
+          } catch (err) {
+            console.warn(`  ! Google Books falló para la búsqueda sin restricción "${query}": ${err.message}`);
+          }
+        }
         if (queryTargetsAuthor && matchingAuthors.length === 0) continue;
         const authorMatchesItems = matchingAuthors.length ? matchingAuthors : data.items;
         // Among exact-title matches, prefer the most "known" edition (highest ratingsCount)
@@ -359,6 +371,22 @@ async function main() {
   } else {
     console.log('[fetchBooksData] Google Books no está disponible; se conservan los datos de enriquecimiento disponibles.');
   }
+
+  await Promise.all(gridBooks.map(async (book) => {
+    if (book.traduccion_es) return;
+    const override = overrides[book.titulo];
+    const volume = book.volumeInfo && !Array.isArray(book.volumeInfo) ? book.volumeInfo : {};
+    const translated = await translateBookMetadata({
+      description: override?.descripcion ? '' : book.descripcion,
+      categories: book.categorias,
+      language: volume.language,
+    });
+    if (translated.changed) {
+      if (!override?.descripcion) book.descripcion = translated.description;
+      book.categorias = translated.categories;
+      book.traduccion_es = true;
+    }
+  }));
 
   gridBooks.forEach((book) => {
     const override = overrides[book.titulo];

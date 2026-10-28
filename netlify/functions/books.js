@@ -1,6 +1,7 @@
 const cachedBooks = require('../../src/data/books.json');
 const { fetchSheetRows, getCurrentBook } = require('../../scripts/googleSheets');
 const { SHEET_ID } = require('../../scripts/sheetConfig');
+const { translateBookMetadata } = require('../../scripts/translateBookMetadata');
 const {
   authorMatches,
   catalogTitles,
@@ -107,30 +108,39 @@ async function searchGoogleBooks(title, catalogAuthor, override) {
     url.searchParams.set('q', query);
     url.searchParams.set('maxResults', '10');
     url.searchParams.set('key', GOOGLE_BOOKS_API_KEY);
-    let data;
-    for (let attempt = 0; attempt < 3; attempt += 1) {
-      try {
-        const response = await fetch(url);
-        if (response.ok) {
-          data = await response.json();
-          break;
+    url.searchParams.set('langRestrict', 'es');
+    const fetchResults = async () => {
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        try {
+          const response = await fetch(url);
+          if (response.ok) return response.json();
+          if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 2) {
+            throw new Error(`Google Books HTTP ${response.status}`);
+          }
+        } catch (error) {
+          if (attempt === 2 || !/fetch failed|Google Books HTTP (429|500|502|503|504)/i.test(error.message)) throw error;
         }
-        if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 2) {
-          throw new Error(`Google Books HTTP ${response.status}`);
-        }
-      } catch (error) {
-        if (attempt === 2 || !/fetch failed|Google Books HTTP (429|500|502|503|504)/i.test(error.message)) throw error;
+        await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
       }
-      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
-    }
-    if (!data) continue;
-    const items = data.items || [];
+      return null;
+    };
+    let data = await fetchResults();
     const queryTargetsAuthor = catalogAuthor
       && (query.toLocaleLowerCase().includes('inauthor:')
         || query.toLocaleLowerCase().includes(catalogAuthor.toLocaleLowerCase()));
-    const authorMatchesItems = catalogAuthor
+    let items = data?.items || [];
+    let authorMatchesItems = catalogAuthor
       ? items.filter((item) => authorMatches(catalogAuthor, item.volumeInfo?.authors))
       : items;
+    if (!items.length || (queryTargetsAuthor && !authorMatchesItems.length)) {
+      url.searchParams.delete('langRestrict');
+      data = await fetchResults();
+      items = data?.items || [];
+      authorMatchesItems = catalogAuthor
+        ? items.filter((item) => authorMatches(catalogAuthor, item.volumeInfo?.authors))
+        : items;
+    }
+    if (!data) continue;
     if (items.length && !queryTargetsAuthor && !titleFallback) {
       titleFallback = [...items].sort((a, b) => scoreItem(b) - scoreItem(a))[0];
     }
@@ -146,10 +156,8 @@ async function searchGoogleBooks(title, catalogAuthor, override) {
 }
 
 async function enrichMissingMetadata(books, catalogRows = []) {
-  if (!GOOGLE_BOOKS_API_KEY) return books;
-
   const catalog = createCatalogMap(catalogRows);
-  await Promise.all(books.filter(needsMetadata).map(async (book) => {
+  if (GOOGLE_BOOKS_API_KEY) await Promise.all(books.filter(needsMetadata).map(async (book) => {
     const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
     const cacheKey = `${book.titulo}\u0000${catalogAuthor}`;
     if (!metadataCache.has(cacheKey)) {
@@ -182,6 +190,22 @@ async function enrichMissingMetadata(books, catalogRows = []) {
     if (override?.imagen) book.imagen = override.imagen;
     if (override?.descripcion) book.descripcion = override.descripcion;
   });
+
+  await Promise.all(books.map(async (book) => {
+    if (book.traduccion_es) return;
+    const override = bookOverrides[book.titulo];
+    const volume = book.volumeInfo && !Array.isArray(book.volumeInfo) ? book.volumeInfo : {};
+    const translated = await translateBookMetadata({
+      description: override?.descripcion ? '' : book.descripcion,
+      categories: book.categorias,
+      language: volume.language,
+    });
+    if (translated.changed) {
+      if (!override?.descripcion) book.descripcion = translated.description;
+      book.categorias = translated.categories;
+      book.traduccion_es = true;
+    }
+  }));
   return books;
 }
 
