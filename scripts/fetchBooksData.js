@@ -148,6 +148,32 @@ function updateBookFromItem(book, item, refreshMetadata = false) {
   if ((refreshMetadata || Array.isArray(book.volumeInfo)) && item.volumeInfo) book.volumeInfo = item.volumeInfo;
 }
 
+function applyBookOverride(book, override) {
+  if (!override) return;
+  if (override.autor) book.autor = override.autor;
+  if (override.imagen) book.imagen = override.imagen;
+  if (override.editorial) book.editorial = override.editorial;
+  if (override.fecha_publicacion) book.fecha_publicacion = override.fecha_publicacion;
+  if (override.descripcion) book.descripcion = override.descripcion;
+  if (override.n_paginas) book.n_paginas = override.n_paginas;
+  if (override.categorias) book.categorias = override.categorias;
+
+  const volume = book.volumeInfo && !Array.isArray(book.volumeInfo) ? book.volumeInfo : {};
+  book.volumeInfo = {
+    ...volume,
+    ...(override.autor ? { authors: [override.autor] } : {}),
+    ...(override.editorial ? { publisher: override.editorial } : {}),
+    ...(override.fecha_publicacion ? { publishedDate: override.fecha_publicacion } : {}),
+    ...(override.descripcion ? { description: override.descripcion } : {}),
+    ...(override.n_paginas ? { pageCount: override.n_paginas } : {}),
+    ...(override.categorias ? { categories: override.categorias } : {}),
+    ...(override.imagen ? {
+      imageLinks: { ...volume.imageLinks, thumbnail: override.imagen, smallThumbnail: override.imagen },
+    } : {}),
+    ...(override.autor || override.descripcion || override.categorias ? { language: 'es' } : {}),
+  };
+}
+
 async function fetchGoogleBooksData(title, langRestrict) {
   const langParam = langRestrict ? `&langRestrict=${langRestrict}` : '';
   const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=10${langParam}&key=${API_KEY}`;
@@ -375,6 +401,8 @@ async function main() {
     console.log('[fetchBooksData] Google Books no está disponible; se conservan los datos de enriquecimiento disponibles.');
   }
 
+  gridBooks.forEach((book) => applyBookOverride(book, overrides[book.titulo]));
+
   await Promise.all(gridBooks.map(async (book) => {
     const override = overrides[book.titulo];
     const volume = book.volumeInfo && !Array.isArray(book.volumeInfo) ? book.volumeInfo : {};
@@ -401,11 +429,7 @@ async function main() {
       : translatedFields;
   }));
 
-  gridBooks.forEach((book) => {
-    const override = overrides[book.titulo];
-    if (override && override.imagen) book.imagen = override.imagen;
-    if (override && override.descripcion) book.descripcion = override.descripcion;
-  });
+  gridBooks.forEach((book) => applyBookOverride(book, overrides[book.titulo]));
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(gridBooks, null, 2) + '\n');

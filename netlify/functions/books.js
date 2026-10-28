@@ -13,6 +13,33 @@ const bookOverrides = require('../../scripts/bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
 const metadataCache = new Map();
+
+function applyBookOverride(book, override) {
+  if (!override) return;
+  if (override.autor) book.autor = override.autor;
+  if (override.imagen) book.imagen = override.imagen;
+  if (override.editorial) book.editorial = override.editorial;
+  if (override.fecha_publicacion) book.fecha_publicacion = override.fecha_publicacion;
+  if (override.descripcion) book.descripcion = override.descripcion;
+  if (override.n_paginas) book.n_paginas = override.n_paginas;
+  if (override.categorias) book.categorias = override.categorias;
+
+  const volume = book.volumeInfo && !Array.isArray(book.volumeInfo) ? book.volumeInfo : {};
+  book.volumeInfo = {
+    ...volume,
+    ...(override.autor ? { authors: [override.autor] } : {}),
+    ...(override.editorial ? { publisher: override.editorial } : {}),
+    ...(override.fecha_publicacion ? { publishedDate: override.fecha_publicacion } : {}),
+    ...(override.descripcion ? { description: override.descripcion } : {}),
+    ...(override.n_paginas ? { pageCount: override.n_paginas } : {}),
+    ...(override.categorias ? { categories: override.categorias } : {}),
+    ...(override.imagen ? {
+      imageLinks: { ...volume.imageLinks, thumbnail: override.imagen, smallThumbnail: override.imagen },
+    } : {}),
+    ...(override.autor || override.descripcion || override.categorias ? { language: 'es' } : {}),
+  };
+}
+
 function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor = '') {
   const byTitle = new Map();
   const catalog = createCatalogMap(catalogRows);
@@ -194,11 +221,7 @@ async function enrichMissingMetadata(books, catalogRows = []) {
     if (override?.descripcion) book.descripcion = override.descripcion;
   }));
 
-  books.forEach((book) => {
-    const override = bookOverrides[book.titulo];
-    if (override?.imagen) book.imagen = override.imagen;
-    if (override?.descripcion) book.descripcion = override.descripcion;
-  });
+  books.forEach((book) => applyBookOverride(book, bookOverrides[book.titulo]));
 
   await Promise.all(books.map(async (book) => {
     const override = bookOverrides[book.titulo];
@@ -225,6 +248,7 @@ async function enrichMissingMetadata(books, catalogRows = []) {
       ? true
       : translatedFields;
   }));
+  books.forEach((book) => applyBookOverride(book, bookOverrides[book.titulo]));
   return books;
 }
 

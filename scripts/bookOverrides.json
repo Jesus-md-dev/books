@@ -5,7 +5,13 @@
   "Babel": {
     "query": "isbn:9788419266286",
     "matchTitle": "Babel",
+    "autor": "R.F. Kuang",
     "imagen": "https://www.editorialhidra.com/media/hidra/images/cover-142373.jpg",
+    "editorial": "Editorial Hidra",
+    "fecha_publicacion": "2022-11-28",
+    "descripcion": "En 1828, Robin, un huérfano cantonés, estudia en Babel, el Instituto Real de Traducción de Oxford, donde la magia de la plata sostiene el poder imperial británico. Cuando se prepara una guerra contra China, debe decidir entre servir a Babel o unirse a la Sociedad de Hermes.",
+    "n_paginas": 700,
+    "categorias": ["Fantasía"],
     "refreshMetadata": true
   },
   "Atlas de geografía humana": {
