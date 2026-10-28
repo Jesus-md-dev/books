@@ -35,6 +35,16 @@ const columns = [
     align: 'center',
   },
   {
+    field: 'n_paginas',
+    headerName: 'Páginas',
+    flex: 0.6,
+    minWidth: 90,
+    editable: false,
+    align: 'center',
+    headerAlign: 'center',
+    valueFormatter: (value) => value || '—',
+  },
+  {
     field: 'autor',
     headerName: 'Autor/a',
     flex: 1,
