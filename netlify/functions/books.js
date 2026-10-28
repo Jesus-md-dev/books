@@ -1,6 +1,8 @@
 const cachedBooks = require('../../src/data/books.json');
 const { fetchSheetRows } = require('../../scripts/googleSheets');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
+const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
+const metadataCache = new Map();
 
 const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
 const BOOK_SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
@@ -51,6 +53,73 @@ function calculateBooks(voteRows, currentTitle) {
   });
 }
 
+function needsMetadata(book) {
+  return book.imagen === placeholderCover
+    || book.autor === 'Desconocido'
+    || !book.descripcion
+    || book.editorial === 'Desconocida';
+}
+
+function isTitleRelated(resultTitle, bookTitle) {
+  const result = resultTitle.toLowerCase().trim();
+  const book = bookTitle.toLowerCase().trim();
+  return result === book || result.includes(book) || book.includes(result);
+}
+
+function scoreItem(item) {
+  const volume = item.volumeInfo || {};
+  return (volume.language === 'es' ? 1000 : 0)
+    + (volume.imageLinks ? 100 : 0)
+    + (volume.ratingsCount || 0);
+}
+
+async function searchGoogleBooks(title) {
+  const queries = [`${title}.*`, title];
+  for (const query of queries) {
+    const url = new URL('https://www.googleapis.com/books/v1/volumes');
+    url.searchParams.set('q', query);
+    url.searchParams.set('maxResults', '10');
+    url.searchParams.set('key', GOOGLE_BOOKS_API_KEY);
+    const response = await fetch(url);
+    if (!response.ok) throw new Error(`Google Books HTTP ${response.status}`);
+    const data = await response.json();
+    const items = data.items || [];
+    const exact = items.filter((item) => item.volumeInfo?.title?.toLowerCase() === title.toLowerCase());
+    const related = items.filter((item) => isTitleRelated(item.volumeInfo?.title || '', title));
+    const matches = exact.length ? exact : related;
+    if (matches.length) return matches.sort((a, b) => scoreItem(b) - scoreItem(a))[0];
+  }
+  return null;
+}
+
+async function enrichMissingMetadata(books) {
+  if (!GOOGLE_BOOKS_API_KEY) return books;
+
+  await Promise.all(books.filter(needsMetadata).map(async (book) => {
+    if (!metadataCache.has(book.titulo)) {
+      metadataCache.set(book.titulo, searchGoogleBooks(book.titulo).catch((error) => {
+        console.warn(`[books function] Google Books lookup failed (HTTP/detail omitted): ${error.message}`);
+        return null;
+      }));
+    }
+    const item = await metadataCache.get(book.titulo);
+    if (!item) return;
+
+    const volume = item.volumeInfo || {};
+    if (book.autor === 'Desconocido' && volume.authors?.length) book.autor = volume.authors.join(', ');
+    if (book.imagen === placeholderCover && volume.imageLinks?.thumbnail) {
+      book.imagen = volume.imageLinks.thumbnail.replace('http://', 'https://');
+    }
+    if (book.editorial === 'Desconocida' && volume.publisher) book.editorial = volume.publisher;
+    if (book.fecha_publicacion === '-' && volume.publishedDate) book.fecha_publicacion = volume.publishedDate;
+    if (!book.descripcion && volume.description) book.descripcion = volume.description;
+    if (!book.n_paginas && volume.pageCount) book.n_paginas = volume.pageCount;
+    if (!book.categorias?.length && volume.categories) book.categorias = volume.categories;
+    if (!book.volumeInfo || !Object.keys(book.volumeInfo).length) book.volumeInfo = volume;
+  }));
+  return books;
+}
+
 exports.handler = async () => {
   if (!DATA_SHEET_ID || !BOOK_SHEET_ID) {
     return { statusCode: 503, body: 'Google Sheets no está configurado' };
@@ -63,7 +132,7 @@ exports.handler = async () => {
     ]);
     const currentTitle = currentRows[0]?.actual;
     if (!currentTitle) throw new Error('No se encontró el libro actual');
-    const latest = calculateBooks(voteRows, currentTitle);
+    const latest = await enrichMissingMetadata(calculateBooks(voteRows, currentTitle));
     const changed = JSON.stringify(latest) !== JSON.stringify(cachedBooks);
     return {
       statusCode: 200,
