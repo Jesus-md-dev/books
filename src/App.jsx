@@ -8,11 +8,13 @@ import Home from './pages/Home';
 import Stats from './pages/Stats';
 import Members from './pages/Members';
 import "./App.css";
+import { BooksProvider } from './data/BooksContext';
 
 
 const App = () => {
 
    return (
+      <BooksProvider>
       <>
          <Routes>
             <Route path="/" element={<Home />} />
@@ -26,6 +28,7 @@ const App = () => {
          <link rel="dns-prefetch" href="https://books.google.com"></link>
          <link rel="dns-prefetch" href="https://sheets.googleapis.com"></link>
       </>
+      </BooksProvider>
    );
 };
 

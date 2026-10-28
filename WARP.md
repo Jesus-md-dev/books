@@ -47,11 +47,12 @@ npm run fetch-books # Just regenerate src/data/books.json without starting anyth
    API keys in the shipped bundle.
 
 There is **no admin page and no write path from the browser**. Editing votes
-happens directly in the "Libros"/"Actual" Google Sheet tabs. To get those
-changes live, either:
-- run a fresh `npm run build` and redeploy, or
-- (recommended) configure a Netlify Build Hook and have the sheet trigger it
-  on edit (e.g. an Apps Script `onEdit` trigger doing `UrlFetchApp.fetch`).
+happens directly in the "Libros"/"Actual" Google Sheet tabs. On every page
+load, `netlify/functions/books.js` checks those tabs and the shared React
+context updates the pages with the latest ratings and current book. The Sheets
+API key and sheet IDs must be configured as runtime environment variables for
+the Netlify Function. Static generated data remains the fallback if the check
+fails.
 
 ### Key Directories
 ```

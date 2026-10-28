@@ -3,7 +3,7 @@ import Button from '@mui/material/Button';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import NoService  from '../component/noService';
-import dataBooks from '../data/books.json';
+import { useBooks } from '../data/BooksContext';
 
 const columns = [
   {
@@ -50,6 +50,7 @@ const columns = [
  * @returns {JSX.Element}
  */
 const BookList = () => {
+  const dataBooks = useBooks();
   if (!dataBooks || dataBooks.length === 0) {
     return <NoService />;
   }

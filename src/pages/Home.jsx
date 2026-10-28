@@ -2,7 +2,7 @@
 import { useEffect } from 'react';
 import Grid from '@mui/material/Grid2';
 import NoService from '../component/noService';
-import dataBooks from '../data/books.json';
+import { useBooks } from '../data/BooksContext';
 import topRoto from '../assets/top.svg';
 import bottomRoto from '../assets/bottom.svg';
 
@@ -14,6 +14,7 @@ const MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_EMBED_KEY;
  * @returns {JSX.Element}
  */
 const Home = () => {
+  const dataBooks = useBooks();
   let reversedBooks = [];
   let actual = null;
   let dataBooksInverted = [];

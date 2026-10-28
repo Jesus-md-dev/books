@@ -2,7 +2,7 @@
 import { useParams } from 'react-router-dom';
 import Grid from '@mui/material/Grid2';
 import Stars from '../component/stars';
-import dataBooks from '../data/books.json';
+import { useBooks } from '../data/BooksContext';
 import './BookPage.css';
 import NoService from '../component/noService';
 import topRoto from '../assets/top.svg';
@@ -14,6 +14,7 @@ import bottomRoto from '../assets/bottom.svg';
  * @returns {JSX.Element}
  */
 const BookPage = () => {
+    const dataBooks = useBooks();
     const { id } = useParams();
     let book = null;
 

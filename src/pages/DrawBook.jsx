@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import Button from '@mui/material/Button';
 import './DrawBook.css';
-import dataBooks from '../data/books.json';
+import { useBooks } from '../data/BooksContext';
 import NoService  from '../component/noService';
 
 
@@ -16,6 +16,7 @@ function getNRandomItems(items, n) {
 }
 
 const DrawBook = () => {
+  const dataBooks = useBooks();
   useEffect(() => {
     dataBooks.forEach((book) => {
       const img = new Image();

@@ -15,10 +15,10 @@ Website for a book club, live at **[bahia-lectora.jzmarquez.com](https://bahia-l
 The club manages everything in a Google Sheet, so nobody needs an admin panel:
 
 1. **At build time**, `scripts/fetchBooksData.js` reads the votes and the current book from Google Sheets, computes each book's average rating and fills in covers, authors and other details from the **Google Books API**. Results are cached by title, so unchanged books don't hit the API again.
-2. It writes everything to `src/data/books.json`, which the pages import directly.
-3. The browser never calls the Sheets or Books APIs: no loading spinners, and those API keys never reach the client.
+2. It writes everything to `src/data/books.json`, which is the initial data and supplies book details such as covers.
+3. When a visitor opens the site, a Netlify Function checks the current sheet values and refreshes ratings/current-book data if they changed. The Google API key stays on the server.
 
-To publish changes from the sheet, run a new build; a Netlify build hook can trigger it automatically when the sheet is edited.
+Sheet changes appear the next time someone opens the site. A new deployment is still needed for code changes and refreshed book details from Google Books.
 
 ## Features
 
@@ -51,4 +51,4 @@ See [WARP.md](WARP.md) for the full architecture notes.
 
 ## Deployment
 
-Netlify runs `npm run build` and publishes `build/`. Set the same variables under *Site configuration → Environment variables*.
+Netlify runs `npm run build` and publishes `build/`. Set the variables under *Site configuration → Environment variables*; `GOOGLE_API_KEY`, `DATA_SHEET_ID`, and `GOOGLE_BOOK_SHEET_ID` must also be available to Netlify Functions at runtime.

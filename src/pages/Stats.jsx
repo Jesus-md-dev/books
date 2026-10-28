@@ -1,5 +1,5 @@
 import Grid from '@mui/material/Grid2';
-import dataBooks from '../data/books.json';
+import { useBooks } from '../data/BooksContext';
 import { computeClubStats } from '../utils/bookStats';
 import NoService from '../component/noService';
 
@@ -8,6 +8,7 @@ import NoService from '../component/noService';
  * @returns {JSX.Element}
  */
 const Stats = () => {
+  const dataBooks = useBooks();
   if (!dataBooks || dataBooks.length === 0) {
     return <NoService />;
   }
