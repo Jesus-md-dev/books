@@ -1,5 +1,3 @@
-const DEFAULT_SHEET_ID = 'REDACTED_SPREADSHEET_ID';
-
-const SHEET_ID = process.env.BAHIA_SHEETS_ID || DEFAULT_SHEET_ID;
+const SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
 
 module.exports = { SHEET_ID };
