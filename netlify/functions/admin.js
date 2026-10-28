@@ -75,7 +75,7 @@ function adminPage() {
     const status = document.getElementById('status');
     button.addEventListener('click', async () => {
       button.disabled = true;
-      status.textContent = 'Actualizando libros y metadatos…';
+      status.textContent = 'Consultando las hojas y actualizando los datos…';
       try {
         const response = await fetch('/admin/refresh', { method: 'POST', credentials: 'same-origin' });
         const result = await response.json().catch(() => ({}));
@@ -103,10 +103,7 @@ exports.handler = async (event) => {
   if (!isAuthorized(event)) return unauthorized();
 
   if (event.httpMethod === 'POST') {
-    const result = await refreshBooks({
-      ...event,
-      queryStringParameters: { ...event.queryStringParameters, forceMetadata: '1' },
-    });
+    const result = await refreshBooks(event);
     if (result.statusCode !== 200) {
       let error = 'No se pudieron consultar las hojas de Google Sheets.';
       try {
