@@ -47,6 +47,12 @@ Create a `.env` file with:
 | `GOOGLE_TRANSLATE_API_KEY` | Optional; translates imported descriptions and unrecognized categories into Spanish. Common Google Books categories are translated locally. If omitted, `GOOGLE_API_KEY` is reused |
 | `BAHIA_SHEETS_ID` | Optional; spreadsheet ID. Defaults to the original spreadsheet |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
+| `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Required in Netlify to protect `/admin` with HTTP Basic Auth |
+
+The private `/admin` page has a button to query the latest data from all three
+book tabs immediately. Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` in Netlify's
+environment variables; the page and its refresh endpoint return an error until
+both are configured.
 
 The existing `Medias` tab should have three columns, in this order: `Título`, `Autor`, `Media`. Add one book per row by entering its title and author; `Media` is calculated from the votes. The title identifies the book and should match its column in `Libros`. The `Libros` headers and average formulas are prefilled for up to 49 books, so no second title entry or extra tab is needed. ISBN is not required. If an author is missing, the site falls back to a title-based Google Books lookup.
 
