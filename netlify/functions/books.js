@@ -1,5 +1,6 @@
 const cachedBooks = require('../../src/data/books.json');
 const { fetchSheetRows } = require('../../scripts/googleSheets');
+const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 
 const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
 const BOOK_SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
@@ -19,9 +20,7 @@ function calculateBooks(voteRows, currentTitle) {
     }
   }
 
-  const order = voteRows.sheetHeaders
-    ? voteRows.sheetHeaders.filter((title) => byTitle.has(title))
-    : [...byTitle.keys()];
+  const order = voteRows.sheetHeaders ? [...voteRows.sheetHeaders] : [...byTitle.keys()];
   for (const title of byTitle.keys()) {
     if (!order.includes(title)) order.push(title);
   }
@@ -36,6 +35,14 @@ function calculateBooks(voteRows, currentTitle) {
       ...saved,
       id,
       titulo: title,
+      imagen: saved.imagen || placeholderCover,
+      autor: saved.autor || 'Desconocido',
+      editorial: saved.editorial || 'Desconocida',
+      fecha_publicacion: saved.fecha_publicacion || '-',
+      descripcion: saved.descripcion || '',
+      n_paginas: saved.n_paginas || 0,
+      categorias: saved.categorias || [],
+      volumeInfo: saved.volumeInfo || [],
       n_votos: count,
       sum_votos: votes.sum,
       media: count ? (votes.sum / count).toFixed(2) : 0,

@@ -87,7 +87,6 @@ function computeBooks(librosRows, actualTitle) {
       }
     });
   }
-  order = order.filter((title) => rawGridBooks.some((book) => book.titulo === title));
   rawGridBooks.forEach((book) => {
     if (!order.includes(book.titulo)) order.push(book.titulo);
   });
