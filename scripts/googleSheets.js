@@ -37,6 +37,10 @@ async function fetchWithPublicEndpoint(sheetId, tabName) {
   }
 
   const result = JSON.parse(body.slice(jsonStart, jsonEnd + 1));
+  return parseGvizTable(result, tabName);
+}
+
+function parseGvizTable(result, tabName) {
   if (!result.table || result.status === 'error') {
     throw new Error(`Could not read sheet tab "${tabName}"`);
   }
@@ -45,7 +49,7 @@ async function fetchWithPublicEndpoint(sheetId, tabName) {
     column.label || (tabName === 'Actual' && index === 0 ? 'actual' : ''),
   );
 
-  const records = (result.table.rows || []).slice(1).map((row) => {
+  const records = (result.table.rows || []).map((row) => {
     const record = {};
     headers.forEach((header, index) => {
       const key = header || (index === 0 ? '' : `column${index}`);
@@ -75,4 +79,4 @@ async function fetchSheetRows(sheetId, tabName) {
   return fetchWithPublicEndpoint(sheetId, tabName);
 }
 
-module.exports = { fetchSheetRows };
+module.exports = { fetchSheetRows, parseGvizTable };

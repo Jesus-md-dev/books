@@ -71,7 +71,11 @@ const Home = () => {
               </a>
             </Grid>
               <Grid size="auto" className='flex flex-col p-2 text-center items-center'>
-              {actual['direccion'] !== undefined ?
+            <p className="mb-3">
+              <b>{actual['titulo']}</b>
+              {actual['autor'] && actual['autor'] !== 'Desconocido' ? ` — ${actual['autor']}` : ''}
+            </p>
+            {actual['direccion'] !== undefined ?
               <iframe
                   title='google-maps'
                   className='h-80 max-w-xs w-full my-1 rounded-3xl'

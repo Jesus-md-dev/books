@@ -36,6 +36,7 @@ const BookPage = () => {
     const {
         imagen = '',
         titulo = '',
+        autor = '',
         descripcion = '',
         fecha_publicacion = '-',
         categorias = [],
@@ -74,6 +75,7 @@ const BookPage = () => {
                 <div className="w-auto text-center descripcion">
                     <div className='content-center-straight'>
                         <h1>{titulo}</h1>
+                        {autor && autor !== 'Desconocido' && <p><b>Autor/a:</b> {autor}</p>}
                         <p className="mt-2">
                             {descripcion}
                         </p>

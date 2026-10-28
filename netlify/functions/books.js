@@ -1,5 +1,12 @@
 const cachedBooks = require('../../src/data/books.json');
 const { fetchSheetRows } = require('../../scripts/googleSheets');
+const {
+  authorMatches,
+  catalogTitles,
+  createCatalogMap,
+  getCatalogAuthor,
+  googleBooksQueries,
+} = require('../../scripts/bookCatalog');
 const bookOverrides = require('../../scripts/bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
@@ -8,8 +15,9 @@ const metadataCache = new Map();
 const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
 const BOOK_SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
 
-function calculateBooks(voteRows, currentTitle) {
+function calculateBooks(voteRows, currentTitle, catalogRows = []) {
   const byTitle = new Map();
+  const catalog = createCatalogMap(catalogRows);
   for (const row of voteRows) {
     const member = row[''];
     for (const [title, rawVote] of Object.entries(row)) {
@@ -24,28 +32,41 @@ function calculateBooks(voteRows, currentTitle) {
   }
 
   const order = voteRows.sheetHeaders ? [...voteRows.sheetHeaders] : [...byTitle.keys()];
-  for (const title of byTitle.keys()) {
-    if (!order.includes(title)) order.push(title);
+  const orderedTitles = new Set(order.map((title) => String(title).trim().toLocaleLowerCase()));
+  for (const title of catalogTitles(catalogRows)) {
+    const normalized = String(title).trim().toLocaleLowerCase();
+    if (!orderedTitles.has(normalized)) {
+      order.push(title);
+      orderedTitles.add(normalized);
+    }
   }
-  const titles = order.filter((title) => title !== currentTitle);
-  if (!titles.includes(currentTitle)) titles.push(currentTitle);
+  for (const title of byTitle.keys()) {
+    const normalized = String(title).trim().toLocaleLowerCase();
+    if (!orderedTitles.has(normalized)) {
+      order.push(title);
+      orderedTitles.add(normalized);
+    }
+  }
+  const titles = order.filter((title) => String(title).trim() !== String(currentTitle).trim());
+  if (!titles.some((title) => String(title).trim() === String(currentTitle).trim())) titles.push(currentTitle);
 
   return titles.map((title, id) => {
-    const votes = byTitle.get(title) || { votos: [], sum: 0 };
-    const saved = cachedBooks.find((book) => book.titulo === title) || {};
+    const matchingVoteTitle = [...byTitle.keys()].find((key) => String(key).trim() === String(title).trim());
+    const votes = byTitle.get(matchingVoteTitle) || { votos: [], sum: 0 };
+    const saved = cachedBooks.find((book) => String(book.titulo).trim() === String(title).trim()) || {};
     const count = votes.votos.length;
     return {
       ...saved,
       id,
       titulo: title,
       imagen: saved.imagen || placeholderCover,
-      autor: saved.autor || 'Desconocido',
       editorial: saved.editorial || 'Desconocida',
       fecha_publicacion: saved.fecha_publicacion || '-',
       descripcion: saved.descripcion || '',
       n_paginas: saved.n_paginas || 0,
       categorias: saved.categorias || [],
       volumeInfo: saved.volumeInfo || [],
+      autor: getCatalogAuthor(title, catalog) || saved.autor || 'Desconocido',
       n_votos: count,
       sum_votos: votes.sum,
       media: count ? (votes.sum / count).toFixed(2) : 0,
@@ -74,12 +95,11 @@ function scoreItem(item) {
     + (volume.ratingsCount || 0);
 }
 
-async function searchGoogleBooks(title, override) {
+async function searchGoogleBooks(title, catalogAuthor, override) {
   const matchTitle = (override && override.matchTitle) || title;
-  const queries = override && override.query
-    ? [override.query, `${override.query}.*`, title, `intitle:${title}`]
-    : [`${title}.*`, title, `intitle:${title}`];
+  const queries = googleBooksQueries(title, catalogAuthor, override);
   let fallback = null;
+  let titleFallback = null;
   for (const query of queries) {
     const url = new URL('https://www.googleapis.com/books/v1/volumes');
     url.searchParams.set('q', query);
@@ -103,28 +123,40 @@ async function searchGoogleBooks(title, override) {
     }
     if (!data) continue;
     const items = data.items || [];
-    if (items.length && !fallback) {
-      fallback = items.sort((a, b) => scoreItem(b) - scoreItem(a))[0];
+    const queryTargetsAuthor = catalogAuthor
+      && (query.toLocaleLowerCase().includes('inauthor:')
+        || query.toLocaleLowerCase().includes(catalogAuthor.toLocaleLowerCase()));
+    const authorMatchesItems = catalogAuthor
+      ? items.filter((item) => authorMatches(catalogAuthor, item.volumeInfo?.authors))
+      : items;
+    if (items.length && !queryTargetsAuthor && !titleFallback) {
+      titleFallback = [...items].sort((a, b) => scoreItem(b) - scoreItem(a))[0];
     }
-    const exact = items.filter((item) => item.volumeInfo?.title?.toLowerCase() === matchTitle.toLowerCase());
-    const related = items.filter((item) => isTitleRelated(item.volumeInfo?.title || '', matchTitle));
+    if (authorMatchesItems.length && !fallback) {
+      fallback = authorMatchesItems.sort((a, b) => scoreItem(b) - scoreItem(a))[0];
+    }
+    const exact = authorMatchesItems.filter((item) => item.volumeInfo?.title?.toLowerCase() === matchTitle.toLowerCase());
+    const related = authorMatchesItems.filter((item) => isTitleRelated(item.volumeInfo?.title || '', matchTitle));
     const matches = exact.length ? exact : related;
     if (matches.length) return matches.sort((a, b) => scoreItem(b) - scoreItem(a))[0];
   }
-  return fallback;
+  return fallback || titleFallback;
 }
 
-async function enrichMissingMetadata(books) {
+async function enrichMissingMetadata(books, catalogRows = []) {
   if (!GOOGLE_BOOKS_API_KEY) return books;
 
+  const catalog = createCatalogMap(catalogRows);
   await Promise.all(books.filter(needsMetadata).map(async (book) => {
-    if (!metadataCache.has(book.titulo)) {
-      metadataCache.set(book.titulo, searchGoogleBooks(book.titulo, bookOverrides[book.titulo]).catch((error) => {
+    const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
+    const cacheKey = `${book.titulo}\u0000${catalogAuthor}`;
+    if (!metadataCache.has(cacheKey)) {
+      metadataCache.set(cacheKey, searchGoogleBooks(book.titulo, catalogAuthor, bookOverrides[book.titulo]).catch((error) => {
         console.warn(`[books function] Google Books lookup failed (HTTP/detail omitted): ${error.message}`);
         return null;
       }));
     }
-    const item = await metadataCache.get(book.titulo);
+    const item = await metadataCache.get(cacheKey);
     if (!item) return;
 
     const volume = item.volumeInfo || {};
@@ -157,13 +189,22 @@ exports.handler = async () => {
   }
 
   try {
-    const [voteRows, currentRows] = await Promise.all([
+    const readCatalogRows = async () => {
+      try {
+        return await fetchSheetRows(BOOK_SHEET_ID, 'Medias');
+      } catch (error) {
+        console.warn(`[books function] No se pudo leer "Medias"; se usará la búsqueda por título: ${error.message}`);
+        return [];
+      }
+    };
+    const [voteRows, currentRows, catalogRows] = await Promise.all([
       fetchSheetRows(BOOK_SHEET_ID, 'Libros'),
       fetchSheetRows(DATA_SHEET_ID, 'Actual'),
+      readCatalogRows(),
     ]);
     const currentTitle = currentRows[0]?.actual;
     if (!currentTitle) throw new Error('No se encontró el libro actual');
-    const latest = await enrichMissingMetadata(calculateBooks(voteRows, currentTitle));
+    const latest = await enrichMissingMetadata(calculateBooks(voteRows, currentTitle, catalogRows), catalogRows);
     const changed = JSON.stringify(latest) !== JSON.stringify(cachedBooks);
     return {
       statusCode: 200,

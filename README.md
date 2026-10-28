@@ -14,7 +14,7 @@ Website for a book club, live at **[bahia-lectora.jzmarquez.com](https://bahia-l
 
 The club manages everything in a Google Sheet, so nobody needs an admin panel:
 
-1. **At build time**, `scripts/fetchBooksData.js` reads the votes and the current book from Google Sheets, computes each book's average rating and fills in covers, authors and other details from the **Google Books API**. Results are cached by title, so unchanged books don't hit the API again.
+1. **At build time**, `scripts/fetchBooksData.js` reads the votes (`Libros`), the current book (`Actual`) and book titles/authors (`Medias`) from Google Sheets, computes each book's average rating and fills in covers and other details from the **Google Books API**. The `Medias` table pairs `titulo` with `autor`; that author is used to find the right edition and takes precedence over Google Books metadata. Results are cached by title, so unchanged books don't hit the API again.
 2. It writes everything to `src/data/books.json`, which is the initial data and supplies book details such as covers.
 3. When a visitor opens the site, a Netlify Function checks the current sheet values and refreshes ratings/current-book data if they changed. It reads the publicly readable sheets through Google's Visualization endpoint; the browser never contacts Sheets directly.
 
@@ -47,6 +47,8 @@ Create a `.env` file with:
 | `DATA_SHEET_ID` | Sheet with the current book |
 | `GOOGLE_BOOK_SHEET_ID` | Sheet with the votes |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
+
+The existing `Medias` tab should have three columns, in this order: `Título`, `Autor`, `Media`. Add one book per row by entering its title and author; `Media` is calculated from the votes. The title identifies the book and should match its column in `Libros`. The `Libros` headers and average formulas are prefilled for up to 49 books, so no second title entry or extra tab is needed. ISBN is not required. If an author is missing, the site falls back to a title-based Google Books lookup.
 
 See [WARP.md](WARP.md) for the full architecture notes.
 

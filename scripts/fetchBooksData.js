@@ -1,8 +1,7 @@
 #!/usr/bin/env node
 /**
- * Build-time script: reads votes ("Libros") and the current book ("Actual")
- * from Google Sheets, computes the books grid, enriches it with the Google
- * Books API, and writes the result to src/data/books.json.
+ * Build-time script: reads votes ("Libros"), the book list and authors
+ * ("Medias"), and the current book ("Actual") from Google Sheets.
  *
  * Runs during `npm run build` / `npm start` (see package.json "pre*" hooks)
  * so no Google API key or live Sheets/Books calls ever reach the browser.
@@ -12,6 +11,13 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { fetchSheetRows } = require('./googleSheets');
+const {
+  authorMatches,
+  catalogTitles,
+  createCatalogMap,
+  getCatalogAuthor,
+  googleBooksQueries,
+} = require('./bookCatalog');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
@@ -42,8 +48,9 @@ function resetBookFields(book) {
   book.volumeInfo = [];
 }
 
-function computeBooks(librosRows, actualTitle) {
+function computeBooks(librosRows, actualTitle, catalogRows = []) {
   const books = {};
+  const catalog = createCatalogMap(catalogRows);
 
   librosRows.forEach((element) => {
     const username = element[''];
@@ -87,16 +94,28 @@ function computeBooks(librosRows, actualTitle) {
       }
     });
   }
-  rawGridBooks.forEach((book) => {
-    if (!order.includes(book.titulo)) order.push(book.titulo);
+  const orderedTitles = new Set(order.map((title) => String(title).trim().toLocaleLowerCase()));
+  catalogTitles(catalogRows).forEach((title) => {
+    const normalized = String(title).trim().toLocaleLowerCase();
+    if (!orderedTitles.has(normalized)) {
+      order.push(title);
+      orderedTitles.add(normalized);
+    }
   });
-  order = order.filter((titulo) => titulo !== actualTitle);
-  order.push(actualTitle);
+  rawGridBooks.forEach((book) => {
+    const normalized = String(book.titulo).trim().toLocaleLowerCase();
+    if (!orderedTitles.has(normalized)) {
+      order.push(book.titulo);
+      orderedTitles.add(normalized);
+    }
+  });
+  order = order.filter((titulo) => String(titulo).trim() !== String(actualTitle).trim());
+  if (!order.some((titulo) => String(titulo).trim() === String(actualTitle).trim())) order.push(actualTitle);
 
   const gridBooks = [];
   id = 0;
   order.forEach((titulo) => {
-    let book = rawGridBooks.find((b) => b.titulo === titulo);
+    let book = rawGridBooks.find((b) => String(b.titulo).trim() === String(titulo).trim());
     if (!book) {
       book = {
         titulo, n_votos: 0, sum_votos: 0, media: 0, votos: [], imagen: placeholderCover,
@@ -104,6 +123,8 @@ function computeBooks(librosRows, actualTitle) {
         descripcion: '', n_paginas: 0, categorias: [], volumeInfo: [],
       };
     }
+    const catalogAuthor = getCatalogAuthor(titulo, catalog);
+    if (catalogAuthor) book.autor = catalogAuthor;
     book.id = id++;
     gridBooks.push(book);
   });
@@ -208,15 +229,16 @@ function authorsOverlap(knownAuthor, itemAuthors) {
   });
 }
 
-async function enrichBooks(gridBooks, overrides) {
+async function enrichBooks(gridBooks, overrides, catalogRows = []) {
   const unresolved = [];
+  const catalog = createCatalogMap(catalogRows);
   for (const book of gridBooks) {
     const override = overrides[book.titulo];
     if (override && override.skip) continue;
     if (book.imagen !== placeholderCover) continue;
-    const baseQuery = (override && override.query) || book.titulo;
     const matchTitle = (override && override.matchTitle) || book.titulo;
-    for (const query of [`${baseQuery}.*`, baseQuery]) {
+    const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
+    for (const query of googleBooksQueries(book.titulo, catalogAuthor, override)) {
       let data;
       try {
         data = await fetchGoogleBooksData(query);
@@ -226,9 +248,17 @@ async function enrichBooks(gridBooks, overrides) {
         continue;
       }
       if (data && data.items && data.items.length > 0) {
+        const matchingAuthors = catalogAuthor
+          ? data.items.filter((item) => authorMatches(catalogAuthor, item.volumeInfo.authors))
+          : data.items;
+        const queryTargetsAuthor = catalogAuthor
+          && (query.toLocaleLowerCase().includes('inauthor:')
+            || query.toLocaleLowerCase().includes(catalogAuthor.toLocaleLowerCase()));
+        if (queryTargetsAuthor && matchingAuthors.length === 0) continue;
+        const authorMatchesItems = matchingAuthors.length ? matchingAuthors : data.items;
         // Among exact-title matches, prefer the most "known" edition (highest ratingsCount)
         // instead of blindly using whichever the API happened to list last.
-        const exactMatches = data.items.filter(
+        const exactMatches = authorMatchesItems.filter(
           (item) => item.volumeInfo.title.toLowerCase() === matchTitle.toLowerCase(),
         );
         let matched = false;
@@ -241,7 +271,7 @@ async function enrichBooks(gridBooks, overrides) {
           // Spanish translation (with a different title) exists. Only adopt
           // its cover once the author matches — never based on title alone.
           if (best.volumeInfo.language !== 'es') {
-            const spanishEdition = data.items
+            const spanishEdition = authorMatchesItems
               .filter((item) => item.volumeInfo.language === 'es'
                 && item.volumeInfo.imageLinks
                 && authorsOverlap(book.autor, item.volumeInfo.authors))
@@ -255,8 +285,8 @@ async function enrichBooks(gridBooks, overrides) {
           // No exact title match: prefer a result whose title clearly relates to
           // the book (substring match); if none does, still take the top result
           // rather than leave the entry with no cover/data at all.
-          const related = data.items.filter((item) => isTitleRelated(item.volumeInfo.title, matchTitle));
-          updateBookFromItem(book, related.length > 0 ? pickBest(related) : data.items[0]);
+          const related = authorMatchesItems.filter((item) => isTitleRelated(item.volumeInfo.title, matchTitle));
+          updateBookFromItem(book, related.length > 0 ? pickBest(related) : authorMatchesItems[0]);
         }
         if (book.autor !== 'Desconocido' && book.imagen !== placeholderCover) break;
       }
@@ -293,7 +323,15 @@ async function main() {
   if (!actualTitle) throw new Error('No se encontró el libro actual en la hoja "Actual"');
   console.log(`  -> Libro actual: ${actualTitle}`);
 
-  let gridBooks = computeBooks(librosRows, actualTitle);
+  let catalogRows = [];
+  try {
+    console.log('[fetchBooksData] Leyendo títulos y autores de "Medias"...');
+    catalogRows = await fetchSheetRows(BOOK_SHEET_ID, 'Medias');
+  } catch (error) {
+    console.warn(`[fetchBooksData] No se pudo leer "Medias"; se usará la búsqueda por título: ${error.message}`);
+  }
+
+  let gridBooks = computeBooks(librosRows, actualTitle, catalogRows);
   console.log(`[fetchBooksData] Calculados ${gridBooks.length} libros.`);
 
   const overrides = loadOverrides();
@@ -310,6 +348,11 @@ async function main() {
     try {
       const cachedBooks = JSON.parse(fs.readFileSync(OUT_PATH, 'utf8'));
       gridBooks = applyCache(gridBooks, cachedBooks, overrides);
+      const catalog = createCatalogMap(catalogRows);
+      gridBooks.forEach((book) => {
+        const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
+        if (catalogAuthor) book.autor = catalogAuthor;
+      });
       console.log('[fetchBooksData] Reutilizados datos de enriquecimiento ya existentes en books.json.');
     } catch (e) {
       console.warn('[fetchBooksData] No se pudo leer la caché existente:', e.message);
@@ -318,7 +361,7 @@ async function main() {
 
   if (await googleBooksAvailable()) {
     console.log('[fetchBooksData] Enriqueciendo libros pendientes con Google Books...');
-    gridBooks = await enrichBooks(gridBooks, overrides);
+    gridBooks = await enrichBooks(gridBooks, overrides, catalogRows);
   } else {
     console.log('[fetchBooksData] Google Books no está disponible; se conservan los datos de enriquecimiento disponibles.');
   }
