@@ -18,8 +18,8 @@ npm install
 
 Create a `.env` file with (no `REACT_APP_` prefix — these are build-time only, never shipped to the browser):
 ```
-DATA_SHEET_ID=the_sheet_id_with_Data_and_Actual_tabs
-GOOGLE_BOOK_SHEET_ID=the_sheet_id_with_Libros_tab
+# Optional; defaults to the Bahía Lectora test clone
+BAHIA_SHEETS_ID=the_spreadsheet_id
 # Optional; preferred for the official Google Sheets API
 GOOGLE_SHEETS_API_KEY=your_google_sheets_api_key
 # Optional: enrich missing book details with Google Books during builds
@@ -53,9 +53,9 @@ There is **no admin page and no write path from the browser**. Editing votes
 happens directly in the "Libros"/"Actual" Google Sheet tabs. On every page
 load, `netlify/functions/books.js` checks those tabs through Google's public
 Visualization endpoint and the shared React context updates the pages with the
-latest ratings and current book. Configure `DATA_SHEET_ID` and
-`GOOGLE_BOOK_SHEET_ID` as runtime environment variables for the Netlify
-Function. `GOOGLE_SHEETS_API_KEY` is optional and uses the official Sheets API;
+latest ratings and current book. Both build and runtime use the same spreadsheet;
+configure `BAHIA_SHEETS_ID` only to override the default test clone.
+`GOOGLE_SHEETS_API_KEY` is optional and uses the official Sheets API;
 the public endpoint remains a fallback, so the sheets must be publicly
 readable. Static generated data remains the fallback if the check fails.
 `GOOGLE_API_KEY` is optional and used to enrich book metadata through Google
@@ -82,7 +82,8 @@ scripts/
 - Build command: `npm run build` (the `prebuild` hook regenerates the data automatically)
 - Publish directory: `build` (Vite is configured with `build.outDir: 'build'` to match)
 - Required environment variables (Site settings → Environment variables):
-  `DATA_SHEET_ID`, `GOOGLE_BOOK_SHEET_ID`, `VITE_GOOGLE_MAPS_EMBED_KEY`
+  `VITE_GOOGLE_MAPS_EMBED_KEY`
+- Optional: `BAHIA_SHEETS_ID` to override the default test clone.
 - Optional: `GOOGLE_SHEETS_API_KEY` for the official Sheets API (public endpoint is fallback).
 - Optional: `GOOGLE_API_KEY` for Google Books metadata enrichment at build time
   and on page load for titles missing metadata.

@@ -14,7 +14,7 @@ Website for a book club, live at **[bahia-lectora.jzmarquez.com](https://bahia-l
 
 The club manages everything in a Google Sheet, so nobody needs an admin panel:
 
-1. **At build time**, `scripts/fetchBooksData.js` reads the votes (`Libros`), the current book (`Actual`) and book titles/authors (`Medias`) from Google Sheets, computes each book's average rating and fills in covers and other details from the **Google Books API**. The `Medias` table pairs `titulo` with `autor`; that author is used to find the right edition and takes precedence over Google Books metadata. Results are cached by title, so unchanged books don't hit the API again.
+1. **At build time**, `scripts/fetchBooksData.js` reads the votes (`Libros`), the current book (`Actual`) and book titles/authors (`Medias`) from Google Sheets, computes each book's average rating and fills in covers and other details from the **Google Books API**. The `Medias` table pairs `titulo` with `autor`; that author is used to find the right edition and takes precedence over Google Books metadata. `Actual` can contain `Título` and `Autor` columns; its author takes precedence for the current book. Results are cached by title, so unchanged books don't hit the API again.
 2. It writes everything to `src/data/books.json`, which is the initial data and supplies book details such as covers.
 3. When a visitor opens the site, a Netlify Function checks the current sheet values and refreshes ratings/current-book data if they changed. It reads the publicly readable sheets through Google's Visualization endpoint; the browser never contacts Sheets directly.
 
@@ -44,8 +44,7 @@ Create a `.env` file with:
 |---|---|
 | `GOOGLE_SHEETS_API_KEY` | Optional; uses the official Sheets API, with the public endpoint as fallback |
 | `GOOGLE_API_KEY` | Optional; Google Books metadata enrichment during builds and when new titles load |
-| `DATA_SHEET_ID` | Sheet with the current book |
-| `GOOGLE_BOOK_SHEET_ID` | Sheet with the votes |
+| `BAHIA_SHEETS_ID` | Optional; spreadsheet ID. Defaults to the test clone |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
 
 The existing `Medias` tab should have three columns, in this order: `Título`, `Autor`, `Media`. Add one book per row by entering its title and author; `Media` is calculated from the votes. The title identifies the book and should match its column in `Libros`. The `Libros` headers and average formulas are prefilled for up to 49 books, so no second title entry or extra tab is needed. ISBN is not required. If an author is missing, the site falls back to a title-based Google Books lookup.
@@ -54,4 +53,4 @@ See [WARP.md](WARP.md) for the full architecture notes.
 
 ## Deployment
 
-Netlify runs `npm run build` and publishes `build/`. Set `DATA_SHEET_ID` and `GOOGLE_BOOK_SHEET_ID` under *Site configuration → Environment variables*; they must be available to Netlify Functions at runtime. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime.
+Netlify runs `npm run build` and publishes `build/`. The build and Netlify Function use the same spreadsheet, defaulting to the test clone; set `BAHIA_SHEETS_ID` under *Site configuration → Environment variables* only to override it. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime.

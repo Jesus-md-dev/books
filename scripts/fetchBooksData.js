@@ -10,7 +10,8 @@ require('dotenv').config();
 
 const fs = require('fs');
 const path = require('path');
-const { fetchSheetRows, getCurrentBookTitle } = require('./googleSheets');
+const { fetchSheetRows, getCurrentBook } = require('./googleSheets');
+const { SHEET_ID } = require('./sheetConfig');
 const {
   authorMatches,
   catalogTitles,
@@ -20,8 +21,6 @@ const {
 } = require('./bookCatalog');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
-const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
-const BOOK_SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
 
 const OUT_PATH = path.join(__dirname, '..', 'src', 'data', 'books.json');
 const OVERRIDES_PATH = path.join(__dirname, 'bookOverrides.json');
@@ -48,7 +47,7 @@ function resetBookFields(book) {
   book.volumeInfo = [];
 }
 
-function computeBooks(librosRows, actualTitle, catalogRows = []) {
+function computeBooks(librosRows, actualTitle, catalogRows = [], actualAuthor = '') {
   const books = {};
   const catalog = createCatalogMap(catalogRows);
 
@@ -125,6 +124,9 @@ function computeBooks(librosRows, actualTitle, catalogRows = []) {
     }
     const catalogAuthor = getCatalogAuthor(titulo, catalog);
     if (catalogAuthor) book.autor = catalogAuthor;
+    if (actualAuthor && String(titulo).trim() === String(actualTitle).trim()) {
+      book.autor = actualAuthor;
+    }
     book.id = id++;
     gridBooks.push(book);
   });
@@ -301,37 +303,26 @@ async function enrichBooks(gridBooks, overrides, catalogRows = []) {
 }
 
 async function main() {
-  if (!DATA_SHEET_ID || !BOOK_SHEET_ID) {
-    console.warn('[fetchBooksData] Faltan DATA_SHEET_ID / GOOGLE_BOOK_SHEET_ID.');
-    if (!fs.existsSync(OUT_PATH)) {
-      fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
-      fs.writeFileSync(OUT_PATH, '[]\n');
-      console.warn('[fetchBooksData] Creado src/data/books.json vacío como fallback.');
-    } else {
-      console.warn('[fetchBooksData] Se mantiene src/data/books.json existente.');
-    }
-    return;
-  }
-
   console.log('[fetchBooksData] Leyendo hoja "Libros"...');
-  const librosRows = await fetchSheetRows(BOOK_SHEET_ID, 'Libros');
+  const librosRows = await fetchSheetRows(SHEET_ID, 'Libros');
   console.log(`  -> ${librosRows.length} filas de votos`);
 
   console.log('[fetchBooksData] Leyendo hoja "Actual"...');
-  const actualRows = await fetchSheetRows(DATA_SHEET_ID, 'Actual');
-  const actualTitle = getCurrentBookTitle(actualRows);
+  const actualRows = await fetchSheetRows(SHEET_ID, 'Actual');
+  const actualBook = getCurrentBook(actualRows);
+  const actualTitle = actualBook?.titulo;
   if (!actualTitle) throw new Error('No se encontró el libro actual en la hoja "Actual"');
   console.log(`  -> Libro actual: ${actualTitle}`);
 
   let catalogRows = [];
   try {
     console.log('[fetchBooksData] Leyendo títulos y autores de "Medias"...');
-    catalogRows = await fetchSheetRows(BOOK_SHEET_ID, 'Medias');
+    catalogRows = await fetchSheetRows(SHEET_ID, 'Medias');
   } catch (error) {
     console.warn(`[fetchBooksData] No se pudo leer "Medias"; se usará la búsqueda por título: ${error.message}`);
   }
 
-  let gridBooks = computeBooks(librosRows, actualTitle, catalogRows);
+  let gridBooks = computeBooks(librosRows, actualTitle, catalogRows, actualBook.autor);
   console.log(`[fetchBooksData] Calculados ${gridBooks.length} libros.`);
 
   const overrides = loadOverrides();
@@ -352,6 +343,9 @@ async function main() {
       gridBooks.forEach((book) => {
         const catalogAuthor = getCatalogAuthor(book.titulo, catalog);
         if (catalogAuthor) book.autor = catalogAuthor;
+        if (actualBook.autor && String(book.titulo).trim() === String(actualTitle).trim()) {
+          book.autor = actualBook.autor;
+        }
       });
       console.log('[fetchBooksData] Reutilizados datos de enriquecimiento ya existentes en books.json.');
     } catch (e) {

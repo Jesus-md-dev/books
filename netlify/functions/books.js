@@ -1,5 +1,6 @@
 const cachedBooks = require('../../src/data/books.json');
-const { fetchSheetRows, getCurrentBookTitle } = require('../../scripts/googleSheets');
+const { fetchSheetRows, getCurrentBook } = require('../../scripts/googleSheets');
+const { SHEET_ID } = require('../../scripts/sheetConfig');
 const {
   authorMatches,
   catalogTitles,
@@ -12,10 +13,8 @@ const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
 const metadataCache = new Map();
 
-const DATA_SHEET_ID = process.env.DATA_SHEET_ID;
-const BOOK_SHEET_ID = process.env.GOOGLE_BOOK_SHEET_ID;
 
-function calculateBooks(voteRows, currentTitle, catalogRows = []) {
+function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor = '') {
   const byTitle = new Map();
   const catalog = createCatalogMap(catalogRows);
   for (const row of voteRows) {
@@ -66,7 +65,10 @@ function calculateBooks(voteRows, currentTitle, catalogRows = []) {
       n_paginas: saved.n_paginas || 0,
       categorias: saved.categorias || [],
       volumeInfo: saved.volumeInfo || [],
-      autor: getCatalogAuthor(title, catalog) || saved.autor || 'Desconocido',
+      autor: (String(title).trim() === String(currentTitle).trim() && currentAuthor)
+        || getCatalogAuthor(title, catalog)
+        || saved.autor
+        || 'Desconocido',
       n_votos: count,
       sum_votos: votes.sum,
       media: count ? (votes.sum / count).toFixed(2) : 0,
@@ -184,27 +186,27 @@ async function enrichMissingMetadata(books, catalogRows = []) {
 }
 
 exports.handler = async () => {
-  if (!DATA_SHEET_ID || !BOOK_SHEET_ID) {
-    return { statusCode: 503, body: 'Google Sheets no está configurado' };
-  }
-
   try {
     const readCatalogRows = async () => {
       try {
-        return await fetchSheetRows(BOOK_SHEET_ID, 'Medias');
+        return await fetchSheetRows(SHEET_ID, 'Medias');
       } catch (error) {
         console.warn(`[books function] No se pudo leer "Medias"; se usará la búsqueda por título: ${error.message}`);
         return [];
       }
     };
     const [voteRows, currentRows, catalogRows] = await Promise.all([
-      fetchSheetRows(BOOK_SHEET_ID, 'Libros'),
-      fetchSheetRows(DATA_SHEET_ID, 'Actual'),
+      fetchSheetRows(SHEET_ID, 'Libros'),
+      fetchSheetRows(SHEET_ID, 'Actual'),
       readCatalogRows(),
     ]);
-    const currentTitle = getCurrentBookTitle(currentRows);
+    const currentBook = getCurrentBook(currentRows);
+    const currentTitle = currentBook?.titulo;
     if (!currentTitle) throw new Error('No se encontró el libro actual');
-    const latest = await enrichMissingMetadata(calculateBooks(voteRows, currentTitle, catalogRows), catalogRows);
+    const latest = await enrichMissingMetadata(
+      calculateBooks(voteRows, currentTitle, catalogRows, currentBook.autor),
+      catalogRows,
+    );
     const changed = JSON.stringify(latest) !== JSON.stringify(cachedBooks);
     return {
       statusCode: 200,
