@@ -8,6 +8,14 @@ import NoService from '../component/noService';
 import topRoto from '../assets/top.svg';
 import bottomRoto from '../assets/bottom.svg';
 
+function normalizeBookTitle(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim()
+        .toLocaleLowerCase();
+}
+
 
 /**
  * BookPage component displaying details and ratings for a single book.
@@ -23,9 +31,7 @@ const BookPage = () => {
     }
 
     if (dataBooks && dataBooks.length > 0) {
-        dataBooks.forEach(gridBook => {
-            if (gridBook['titulo'] === id) book = gridBook;
-        });
+        book = dataBooks.find((gridBook) => normalizeBookTitle(gridBook.titulo) === normalizeBookTitle(id));
     }
 
     if (!book) {

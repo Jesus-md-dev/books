@@ -19,11 +19,12 @@ const INDEX_PATH = path.join(BUILD_DIR, 'index.html');
 const BOOKS_PATH = path.join(__dirname, '..', 'src', 'data', 'books.json');
 
 function buildOgBlock(book) {
-  const title = `${book.titulo} · Bahía Lectora`;
+  const bookTitle = String(book.titulo || '').trim();
+  const title = `${bookTitle} · Bahía Lectora`;
   const description = book.descripcion
     ? book.descripcion.slice(0, 200)
-    : `${book.titulo}${book.autor && book.autor !== 'Desconocido' ? ` — ${book.autor}` : ''}`;
-  const url = `${SITE_URL}/libro/${encodeURIComponent(book.titulo)}`;
+    : `${bookTitle}${book.autor && book.autor !== 'Desconocido' ? ` — ${book.autor}` : ''}`;
+  const url = `${SITE_URL}/libro/${encodeURIComponent(bookTitle)}`;
 
   return `<!-- og:start -->
     <meta property="og:type" content="book" />
@@ -59,11 +60,12 @@ function main() {
 
   let written = 0;
   for (const book of books) {
+    const bookTitle = String(book.titulo || '').trim();
     const ogBlock = buildOgBlock(book);
     const html = baseHtml.replace(/<!-- og:start -->[\s\S]*?<!-- og:end -->/, ogBlock)
-      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(book.titulo)} · Bahía Lectora</title>`);
+      .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(bookTitle)} · Bahía Lectora</title>`);
 
-    const dir = path.join(BUILD_DIR, 'libro', encodeURIComponent(book.titulo));
+    const dir = path.join(BUILD_DIR, 'libro', encodeURIComponent(bookTitle));
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), html);
     written += 1;
