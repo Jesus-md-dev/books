@@ -1,5 +1,5 @@
 const cachedBooks = require('../../src/data/books.json');
-const { fetchSheetRows } = require('../../scripts/googleSheets');
+const { fetchSheetRows, getCurrentBookTitle } = require('../../scripts/googleSheets');
 const {
   authorMatches,
   catalogTitles,
@@ -202,7 +202,7 @@ exports.handler = async () => {
       fetchSheetRows(DATA_SHEET_ID, 'Actual'),
       readCatalogRows(),
     ]);
-    const currentTitle = currentRows[0]?.actual;
+    const currentTitle = getCurrentBookTitle(currentRows);
     if (!currentTitle) throw new Error('No se encontró el libro actual');
     const latest = await enrichMissingMetadata(calculateBooks(voteRows, currentTitle, catalogRows), catalogRows);
     const changed = JSON.stringify(latest) !== JSON.stringify(cachedBooks);

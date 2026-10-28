@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { parseGvizTable } = require('./googleSheets');
+const { getCurrentBookTitle, parseGvizTable } = require('./googleSheets');
 
 test('preserves the first GViz data row and the Libros column headers', () => {
   const rows = parseGvizTable({
@@ -26,4 +26,11 @@ test('maps the first Actual column to the actual field without dropping its valu
   }, 'Actual');
 
   assert.deepEqual(rows, [{ actual: 'Libro actual' }]);
+});
+
+test('skips the Actual header row to select the current book title', () => {
+  assert.equal(getCurrentBookTitle([
+    { actual: 'actual' },
+    { actual: 'El lunes nos querrán' },
+  ]), 'El lunes nos querrán');
 });

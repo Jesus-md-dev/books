@@ -68,6 +68,13 @@ function parseGvizTable(result, tabName) {
   return records;
 }
 
+function getCurrentBookTitle(rows = []) {
+  const titles = rows
+    .map((row) => row.actual)
+    .filter((title) => title !== null && title !== undefined && String(title).trim());
+  return titles.find((title) => String(title).trim().toLocaleLowerCase() !== 'actual') || titles[0];
+}
+
 async function fetchSheetRows(sheetId, tabName) {
   if (API_KEY) {
     try {
@@ -79,4 +86,4 @@ async function fetchSheetRows(sheetId, tabName) {
   return fetchWithPublicEndpoint(sheetId, tabName);
 }
 
-module.exports = { fetchSheetRows, parseGvizTable };
+module.exports = { fetchSheetRows, getCurrentBookTitle, parseGvizTable };

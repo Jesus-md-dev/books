@@ -10,7 +10,7 @@ require('dotenv').config();
 
 const fs = require('fs');
 const path = require('path');
-const { fetchSheetRows } = require('./googleSheets');
+const { fetchSheetRows, getCurrentBookTitle } = require('./googleSheets');
 const {
   authorMatches,
   catalogTitles,
@@ -319,7 +319,7 @@ async function main() {
 
   console.log('[fetchBooksData] Leyendo hoja "Actual"...');
   const actualRows = await fetchSheetRows(DATA_SHEET_ID, 'Actual');
-  const actualTitle = actualRows[0] && actualRows[0].actual;
+  const actualTitle = getCurrentBookTitle(actualRows);
   if (!actualTitle) throw new Error('No se encontró el libro actual en la hoja "Actual"');
   console.log(`  -> Libro actual: ${actualTitle}`);
 
