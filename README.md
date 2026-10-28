@@ -16,9 +16,9 @@ The club manages everything in a Google Sheet, so nobody needs an admin panel:
 
 1. **At build time**, `scripts/fetchBooksData.js` reads the votes (`Libros`), the current book (`Actual`) and book titles/authors (`Medias`) from Google Sheets, computes each book's average rating and fills in covers and other details from the **Google Books API**. The `Medias` table pairs `titulo` with `autor`; that author is used to find the right edition and takes precedence over Google Books metadata. `Actual` can contain `Título` and `Autor` columns; its author takes precedence for the current book. Results are cached by title, so unchanged books don't hit the API again.
 2. It writes everything to `src/data/books.json`, which is the initial data and supplies book details such as covers.
-3. When a visitor opens the site, a Netlify Function checks the current sheet values and refreshes ratings/current-book data if they changed. It reads the publicly readable sheets through Google's Visualization endpoint; the browser never contacts Sheets directly.
+3. A Netlify Function checks the `Libros`, `Actual` and `Medias` tabs when a visitor opens the site and once per minute while it stays open. It reads the publicly readable sheets through Google's Visualization endpoint; the browser never contacts Sheets directly.
 
-Sheet changes appear the next time someone opens the site. A new deployment is still needed for code changes and refreshed book details from Google Books.
+Changes to those sheets appear within about a minute on an open page, or on the next visit. A new deployment is needed for code changes and refreshed book details from Google Books.
 
 ## Features
 
