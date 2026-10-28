@@ -1,5 +1,4 @@
 const crypto = require('node:crypto');
-const { handler: refreshBooks } = require('./books');
 
 const securityHeaders = {
   'Cache-Control': 'no-store',
@@ -66,7 +65,7 @@ function adminPage() {
 <body>
   <main>
     <h1>Administración de Bahía Lectora</h1>
-    <p>Consulta ahora las pestañas Libros, Actual y Medias para obtener los datos más recientes.</p>
+    <p>Vuelve a leer Libros, Actual y Medias y regenera las portadas y los metadatos de todos los libros antes de publicar una nueva versión.</p>
     <button id="refresh" type="button">Forzar actualización</button>
     <p id="status" role="status" aria-live="polite"></p>
   </main>
@@ -80,7 +79,9 @@ function adminPage() {
         const response = await fetch('/admin/refresh', { method: 'POST', credentials: 'same-origin' });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || 'No se pudo actualizar.');
-        status.textContent = 'Datos actualizados para ' + result.books + ' libros · ' + new Date(result.updatedAt).toLocaleTimeString('es-ES');
+        status.textContent = result.buildTriggered
+          ? 'Regeneración completa solicitada. La web se actualizará al terminar el despliegue.'
+          : 'No se ha podido iniciar la regeneración.';
       } catch (error) {
         status.textContent = error.message || 'No se pudo actualizar. Inténtalo de nuevo.';
       } finally {
@@ -103,35 +104,32 @@ exports.handler = async (event) => {
   if (!isAuthorized(event)) return unauthorized();
 
   if (event.httpMethod === 'POST') {
-    const result = await refreshBooks(event);
-    if (result.statusCode !== 200) {
-      let error = 'No se pudieron consultar las hojas de Google Sheets.';
-      try {
-        error = JSON.parse(result.body).error || error;
-      } catch {
-        // Keep the generic message if the books function returns plain text.
-      }
+    const buildHookUrl = process.env.NETLIFY_BUILD_HOOK_URL;
+    if (!buildHookUrl) {
       return {
-        statusCode: result.statusCode,
+        statusCode: 503,
         headers: { ...securityHeaders, 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ error }),
+        body: JSON.stringify({ error: 'Falta NETLIFY_BUILD_HOOK_URL. Configura el build hook indicado en el README.' }),
       };
     }
-
-    let books = [];
     try {
-      books = JSON.parse(result.body);
-    } catch {
+      const response = await fetch(buildHookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ requestedBy: 'bahia-lectora-admin' }),
+      });
+      if (!response.ok) throw new Error(`Netlify build hook HTTP ${response.status}`);
+    } catch (error) {
       return {
         statusCode: 502,
         headers: { ...securityHeaders, 'Content-Type': 'application/json; charset=utf-8' },
-        body: JSON.stringify({ error: 'La función de actualización devolvió una respuesta inválida.' }),
+        body: JSON.stringify({ error: 'No se pudo iniciar el build de Netlify. Revisa el build hook.' }),
       };
     }
     return {
-      statusCode: 200,
+      statusCode: 202,
       headers: { ...securityHeaders, 'Content-Type': 'application/json; charset=utf-8' },
-      body: JSON.stringify({ books: books.length, updatedAt: new Date().toISOString() }),
+      body: JSON.stringify({ buildTriggered: true, requestedAt: new Date().toISOString() }),
     };
   }
 

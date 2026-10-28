@@ -260,13 +260,13 @@ function authorsOverlap(knownAuthor, itemAuthors) {
   });
 }
 
-async function enrichBooks(gridBooks, overrides, catalogRows = []) {
+async function enrichBooks(gridBooks, overrides, catalogRows = [], { forceAll = false } = {}) {
   const unresolved = [];
   const catalog = createCatalogMap(catalogRows);
   for (const book of gridBooks) {
     const override = overrides[book.titulo];
     if (override && override.skip) continue;
-    const refreshMetadata = Boolean(override?.refreshMetadata);
+    const refreshMetadata = forceAll || Boolean(override?.refreshMetadata);
     if (book.imagen !== placeholderCover && !refreshMetadata) continue;
     const matchTitle = (override && override.matchTitle) || book.titulo;
     const catalogAuthor = getCatalogAuthor(book.titulo, catalog) || book.autor;
@@ -344,6 +344,7 @@ async function enrichBooks(gridBooks, overrides, catalogRows = []) {
 }
 
 async function main() {
+  const forceFullRefresh = process.env.INCOMING_HOOK_TITLE === 'Forzar regeneración completa';
   console.log('[fetchBooksData] Leyendo hoja "Libros"...');
   const librosRows = await fetchSheetRows(SHEET_ID, 'Libros');
   console.log(`  -> ${librosRows.length} filas de votos`);
@@ -394,13 +395,32 @@ async function main() {
     }
   }
 
-  if (await googleBooksAvailable()) {
+  const isGoogleBooksAvailable = await googleBooksAvailable();
+  if (forceFullRefresh && !isGoogleBooksAvailable) {
+    throw new Error('No se puede regenerar todo: GOOGLE_API_KEY falta o Google Books no está disponible.');
+  }
+
+  if (isGoogleBooksAvailable) {
+    if (forceFullRefresh) {
+      gridBooks.forEach((book) => {
+        if (overrides[book.titulo]?.skip) return;
+        book.imagen = placeholderCover;
+        book.editorial = 'Desconocida';
+        book.fecha_publicacion = '-';
+        book.descripcion = '';
+        book.n_paginas = 0;
+        book.categorias = [];
+        book.volumeInfo = [];
+        book.traduccion_es = {};
+      });
+    }
     console.log('[fetchBooksData] Enriqueciendo libros pendientes con Google Books...');
-    gridBooks = await enrichBooks(gridBooks, overrides, catalogRows);
+    gridBooks = await enrichBooks(gridBooks, overrides, catalogRows, { forceAll: forceFullRefresh });
   } else {
     console.log('[fetchBooksData] Google Books no está disponible; se conservan los datos de enriquecimiento disponibles.');
   }
 
+  if (forceFullRefresh) gridBooks.forEach((book) => { book.traduccion_es = {}; });
   gridBooks.forEach((book) => applyBookOverride(book, overrides[book.titulo]));
 
   await Promise.all(gridBooks.map(async (book) => {

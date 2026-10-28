@@ -2,6 +2,30 @@
   "Estación Once": { "query": "Station Eleven Emily St. John Mandel", "matchTitle": "Station Eleven" },
   "La Maldición de Hill House": { "query": "The Haunting of Hill House Shirley Jackson", "matchTitle": "The Haunting of Hill House" },
   "Piranesi": { "query": "Piranesi Susanna Clarke", "matchTitle": "Piranesi" },
+  "La familia": {
+    "query": "isbn:9788433999542",
+    "matchTitle": "La familia",
+    "autor": "Sara Mesa",
+    "imagen": "https://cms.anagrama-ed.es/uploads/media/portadas/0001/27/thumb_26507_portadas_big.jpeg",
+    "editorial": "Anagrama",
+    "fecha_publicacion": "2022-09-14",
+    "descripcion": "Damián proclama que en su familia no hay secretos, pero bajo la apariencia de normalidad se esconden heridas, silencios y conflictos. A lo largo de varias décadas, la novela retrata a sus miembros y cuestiona las relaciones de autoridad, obediencia y libertad.",
+    "n_paginas": 232,
+    "categorias": ["Narrativa contemporánea"],
+    "refreshMetadata": true
+  },
+  "Gótico": {
+    "query": "isbn:9788445009819",
+    "matchTitle": "Gótico",
+    "autor": "Silvia Moreno-García",
+    "imagen": "https://proassets.planetadelibros.cl/usuaris/libros/fotos/338/original/portada_gotico_silvia-moreno-garcia_202106151508.jpg",
+    "editorial": "Minotauro",
+    "fecha_publicacion": "2021-06-23",
+    "descripcion": "Tras recibir una carta inquietante de su prima, Noemí Taboada viaja a una mansión aislada en México. Allí descubre que la casa, la familia de su prima y sus propios sueños esconden secretos cada vez más oscuros.",
+    "n_paginas": 352,
+    "categorias": ["Terror", "Fantasía"],
+    "refreshMetadata": true
+  },
   "Babel": {
     "query": "isbn:9788419266286",
     "matchTitle": "Babel",

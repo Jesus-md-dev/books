@@ -49,11 +49,14 @@ Create a `.env` file with:
 | `BAHIA_SHEETS_ID` | Legacy spreadsheet ID; used only if `GOOGLE_BOOK_SHEET_ID` is unset |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
 | `ADMIN_USERNAME` / `ADMIN_PASSWORD` | Required in Netlify to protect `/admin` with HTTP Basic Auth |
+| `NETLIFY_BUILD_HOOK_URL` | Required by the admin button to trigger a complete rebuild |
 
-The private `/admin` page has a button to reread all three book tabs immediately.
-Set `ADMIN_USERNAME` and `ADMIN_PASSWORD` in Netlify's environment variables;
-the page returns an error until both are configured. `GOOGLE_API_KEY` enables
-Google Books enrichment for new books and changes to title/author data.
+The private `/admin` page has a button that triggers a complete Netlify rebuild:
+it rereads all three book tabs and refreshes every book's metadata and cover
+from Google Books. Create a Netlify Build Hook named exactly `Forzar regeneración completa`, then set its URL as `NETLIFY_BUILD_HOOK_URL`. The hook title tells the
+build script to refresh all books instead of reusing cached metadata. Set
+`ADMIN_USERNAME` and `ADMIN_PASSWORD` to protect `/admin`, and configure
+`GOOGLE_API_KEY` so the rebuild can query Google Books.
 
 The existing `Medias` tab should have three columns, in this order: `Título`, `Autor`, `Media`. Add one book per row by entering its title and author; `Media` is calculated from the votes. The title identifies the book and should match its column in `Libros`. The `Libros` headers and average formulas are prefilled for up to 49 books, so no second title entry or extra tab is needed. ISBN is not required. If an author is missing, the site falls back to a title-based Google Books lookup.
 
