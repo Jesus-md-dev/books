@@ -44,7 +44,7 @@ Create a `.env` file with:
 |---|---|
 | `GOOGLE_SHEETS_API_KEY` | Optional; uses the official Sheets API, with the public endpoint as fallback |
 | `GOOGLE_API_KEY` | Optional; Google Books metadata enrichment during builds and when new titles load |
-| `BAHIA_SHEETS_ID` | Optional; spreadsheet ID. Defaults to the test clone |
+| `BAHIA_SHEETS_ID` | Optional; spreadsheet ID. Defaults to the original spreadsheet |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
 
 The existing `Medias` tab should have three columns, in this order: `Título`, `Autor`, `Media`. Add one book per row by entering its title and author; `Media` is calculated from the votes. The title identifies the book and should match its column in `Libros`. The `Libros` headers and average formulas are prefilled for up to 49 books, so no second title entry or extra tab is needed. ISBN is not required. If an author is missing, the site falls back to a title-based Google Books lookup.
@@ -53,4 +53,4 @@ See [WARP.md](WARP.md) for the full architecture notes.
 
 ## Deployment
 
-Netlify runs `npm run build` and publishes `build/`. The build and Netlify Function use the same spreadsheet, defaulting to the test clone; set `BAHIA_SHEETS_ID` under *Site configuration → Environment variables* only to override it. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime.
+Netlify runs `npm run build` and publishes `build/`. The build and Netlify Function use the same spreadsheet, defaulting to the original spreadsheet; set `BAHIA_SHEETS_ID` under *Site configuration → Environment variables* only to override it. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime.

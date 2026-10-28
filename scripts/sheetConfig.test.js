@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-test('defaults to the test clone and accepts a spreadsheet override', () => {
+test('defaults to the original spreadsheet and accepts a spreadsheet override', () => {
   const modulePath = require.resolve('./sheetConfig');
   const previousSheetId = process.env.BAHIA_SHEETS_ID;
 
@@ -10,7 +10,7 @@ test('defaults to the test clone and accepts a spreadsheet override', () => {
     delete require.cache[modulePath];
     assert.equal(
       require('./sheetConfig').SHEET_ID,
-      '1iC7cs6dC1Tz6LdrRoiW823LziTqerPjACCRqldwSwKM',
+      'REDACTED_SPREADSHEET_ID',
     );
 
     process.env.BAHIA_SHEETS_ID = 'configured-spreadsheet';
