@@ -1,5 +1,16 @@
 {
   "Estación Once": { "query": "Station Eleven Emily St. John Mandel", "matchTitle": "Station Eleven" },
   "La Maldición de Hill House": { "query": "The Haunting of Hill House Shirley Jackson", "matchTitle": "The Haunting of Hill House" },
-  "Piranesi": { "query": "Piranesi Susanna Clarke", "matchTitle": "Piranesi" }
+  "Piranesi": { "query": "Piranesi Susanna Clarke", "matchTitle": "Piranesi" },
+  "Atlas de geografía humana": {
+    "query": "Atlas de geografía humana Almudena Grandes",
+    "matchTitle": "Atlas de geografía humana",
+    "imagen": "https://books.google.com/books/content?id=1KJdAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
+  },
+  "El hombre caja": { "query": "The Box Man inauthor:Abe", "matchTitle": "The Box Man" },
+  "La psiquiatra": {
+    "query": "La Psiquiatra Wulf Dorn",
+    "matchTitle": "La Psiquiatra",
+    "descripcion": "La desaparición de una paciente aterrorizada lleva a la psiquiatra Ellen Roth a investigar un caso que se convierte en un peligroso juego psicológico."
+  }
 }

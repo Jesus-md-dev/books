@@ -58,8 +58,8 @@ latest ratings and current book. Configure `DATA_SHEET_ID` and
 Function. `GOOGLE_SHEETS_API_KEY` is optional and uses the official Sheets API;
 the public endpoint remains a fallback, so the sheets must be publicly
 readable. Static generated data remains the fallback if the check fails.
-`GOOGLE_API_KEY` is optional and only used to enrich book metadata through
-Google Books during builds.
+`GOOGLE_API_KEY` is optional and used to enrich book metadata through Google
+Books during builds and at runtime for titles with missing metadata.
 
 ### Key Directories
 ```
@@ -84,5 +84,6 @@ scripts/
 - Required environment variables (Site settings → Environment variables):
   `DATA_SHEET_ID`, `GOOGLE_BOOK_SHEET_ID`, `VITE_GOOGLE_MAPS_EMBED_KEY`
 - Optional: `GOOGLE_SHEETS_API_KEY` for the official Sheets API (public endpoint is fallback).
-- Optional: `GOOGLE_API_KEY` for Google Books metadata enrichment.
+- Optional: `GOOGLE_API_KEY` for Google Books metadata enrichment at build time
+  and on page load for titles missing metadata.
 - `_redirects` in `public/` handles SPA client-side routing fallback

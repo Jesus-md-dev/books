@@ -125,9 +125,19 @@ function updateBookFromItem(book, item) {
 async function fetchGoogleBooksData(title, langRestrict) {
   const langParam = langRestrict ? `&langRestrict=${langRestrict}` : '';
   const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(title)}&maxResults=10${langParam}&key=${API_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const res = await fetch(url);
+      if (res.ok) return res.json();
+      if (![429, 500, 502, 503, 504].includes(res.status) || attempt === 2) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      if (attempt === 2 || !/fetch failed|HTTP (429|500|502|503|504)/i.test(err.message)) throw err;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+  }
+  throw new Error('Google Books request failed after retries');
 }
 
 async function googleBooksAvailable() {
@@ -312,6 +322,12 @@ async function main() {
   } else {
     console.log('[fetchBooksData] Google Books no está disponible; se conservan los datos de enriquecimiento disponibles.');
   }
+
+  gridBooks.forEach((book) => {
+    const override = overrides[book.titulo];
+    if (override && override.imagen) book.imagen = override.imagen;
+    if (override && override.descripcion) book.descripcion = override.descripcion;
+  });
 
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(gridBooks, null, 2) + '\n');

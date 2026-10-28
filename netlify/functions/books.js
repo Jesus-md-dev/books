@@ -1,5 +1,6 @@
 const cachedBooks = require('../../src/data/books.json');
 const { fetchSheetRows } = require('../../scripts/googleSheets');
+const bookOverrides = require('../../scripts/bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
 const metadataCache = new Map();
@@ -73,23 +74,44 @@ function scoreItem(item) {
     + (volume.ratingsCount || 0);
 }
 
-async function searchGoogleBooks(title) {
-  const queries = [`${title}.*`, title];
+async function searchGoogleBooks(title, override) {
+  const matchTitle = (override && override.matchTitle) || title;
+  const queries = override && override.query
+    ? [override.query, `${override.query}.*`, title, `intitle:${title}`]
+    : [`${title}.*`, title, `intitle:${title}`];
+  let fallback = null;
   for (const query of queries) {
     const url = new URL('https://www.googleapis.com/books/v1/volumes');
     url.searchParams.set('q', query);
     url.searchParams.set('maxResults', '10');
     url.searchParams.set('key', GOOGLE_BOOKS_API_KEY);
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`Google Books HTTP ${response.status}`);
-    const data = await response.json();
+    let data;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          data = await response.json();
+          break;
+        }
+        if (![429, 500, 502, 503, 504].includes(response.status) || attempt === 2) {
+          throw new Error(`Google Books HTTP ${response.status}`);
+        }
+      } catch (error) {
+        if (attempt === 2 || !/fetch failed|Google Books HTTP (429|500|502|503|504)/i.test(error.message)) throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+    }
+    if (!data) continue;
     const items = data.items || [];
-    const exact = items.filter((item) => item.volumeInfo?.title?.toLowerCase() === title.toLowerCase());
-    const related = items.filter((item) => isTitleRelated(item.volumeInfo?.title || '', title));
+    if (items.length && !fallback) {
+      fallback = items.sort((a, b) => scoreItem(b) - scoreItem(a))[0];
+    }
+    const exact = items.filter((item) => item.volumeInfo?.title?.toLowerCase() === matchTitle.toLowerCase());
+    const related = items.filter((item) => isTitleRelated(item.volumeInfo?.title || '', matchTitle));
     const matches = exact.length ? exact : related;
     if (matches.length) return matches.sort((a, b) => scoreItem(b) - scoreItem(a))[0];
   }
-  return null;
+  return fallback;
 }
 
 async function enrichMissingMetadata(books) {
@@ -97,7 +119,7 @@ async function enrichMissingMetadata(books) {
 
   await Promise.all(books.filter(needsMetadata).map(async (book) => {
     if (!metadataCache.has(book.titulo)) {
-      metadataCache.set(book.titulo, searchGoogleBooks(book.titulo).catch((error) => {
+      metadataCache.set(book.titulo, searchGoogleBooks(book.titulo, bookOverrides[book.titulo]).catch((error) => {
         console.warn(`[books function] Google Books lookup failed (HTTP/detail omitted): ${error.message}`);
         return null;
       }));
@@ -116,7 +138,16 @@ async function enrichMissingMetadata(books) {
     if (!book.n_paginas && volume.pageCount) book.n_paginas = volume.pageCount;
     if (!book.categorias?.length && volume.categories) book.categorias = volume.categories;
     if (!book.volumeInfo || !Object.keys(book.volumeInfo).length) book.volumeInfo = volume;
+    const override = bookOverrides[book.titulo];
+    if (override?.imagen) book.imagen = override.imagen;
+    if (override?.descripcion) book.descripcion = override.descripcion;
   }));
+
+  books.forEach((book) => {
+    const override = bookOverrides[book.titulo];
+    if (override?.imagen) book.imagen = override.imagen;
+    if (override?.descripcion) book.descripcion = override.descripcion;
+  });
   return books;
 }
 

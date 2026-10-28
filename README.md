@@ -43,7 +43,7 @@ Create a `.env` file with:
 | Variable | Used for |
 |---|---|
 | `GOOGLE_SHEETS_API_KEY` | Optional; uses the official Sheets API, with the public endpoint as fallback |
-| `GOOGLE_API_KEY` | Optional; Google Books metadata enrichment during builds |
+| `GOOGLE_API_KEY` | Optional; Google Books metadata enrichment during builds and when new titles load |
 | `DATA_SHEET_ID` | Sheet with the current book |
 | `GOOGLE_BOOK_SHEET_ID` | Sheet with the votes |
 | `VITE_GOOGLE_MAPS_EMBED_KEY` | Google Maps embed on the home page (shipped to the browser, so restrict it by HTTP referrer) |
@@ -52,4 +52,4 @@ See [WARP.md](WARP.md) for the full architecture notes.
 
 ## Deployment
 
-Netlify runs `npm run build` and publishes `build/`. Set `DATA_SHEET_ID` and `GOOGLE_BOOK_SHEET_ID` under *Site configuration → Environment variables*; they must be available to Netlify Functions at runtime. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` is optional and only enriches books with Google Books metadata during builds.
+Netlify runs `npm run build` and publishes `build/`. Set `DATA_SHEET_ID` and `GOOGLE_BOOK_SHEET_ID` under *Site configuration → Environment variables*; they must be available to Netlify Functions at runtime. `GOOGLE_SHEETS_API_KEY` is optional but preferred for the official Sheets API. `GOOGLE_API_KEY` enables Google Books metadata enrichment during builds and for newly added titles at runtime.
