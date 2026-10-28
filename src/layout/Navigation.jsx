@@ -8,9 +8,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import { useDarkMode } from '../hooks/useDarkMode';
 import "../App.css";
 
 
@@ -20,8 +17,6 @@ import "../App.css";
  */
 const Navigation = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
-  const [isDark, toggleDark] = useDarkMode();
-
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -152,14 +147,6 @@ const Navigation = () => {
                 Sorteo
               </Button> */}
             </Box>
-            <IconButton
-              onClick={toggleDark}
-              color="inherit"
-              aria-label={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
-              title={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
-            >
-              {isDark ? <LightModeIcon /> : <DarkModeIcon />}
-            </IconButton>
           </Toolbar>
         </div>
       </AppBar>
