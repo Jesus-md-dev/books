@@ -78,7 +78,7 @@ function adminPage() {
       status.textContent = 'Consultando Google Sheets…';
       try {
         const response = await fetch('/admin/refresh', { method: 'POST', credentials: 'same-origin' });
-        const result = await response.json();
+        const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(result.error || 'No se pudo actualizar.');
         status.textContent = 'Actualización completada: ' + result.books + ' libros · ' + new Date(result.updatedAt).toLocaleTimeString('es-ES');
       } catch (error) {
@@ -102,11 +102,7 @@ exports.handler = async (event) => {
   }
   if (!isAuthorized(event)) return unauthorized();
 
-  const action = event.queryStringParameters?.action;
-  if (action === 'refresh') {
-    if (event.httpMethod !== 'POST') {
-      return { statusCode: 405, headers: { ...securityHeaders, Allow: 'POST' }, body: 'Método no permitido' };
-    }
+  if (event.httpMethod === 'POST') {
     const result = await refreshBooks(event);
     if (result.statusCode !== 200) {
       return {
@@ -134,7 +130,11 @@ exports.handler = async (event) => {
   }
 
   if (event.httpMethod !== 'GET') {
-    return { statusCode: 405, headers: { ...securityHeaders, Allow: 'GET' }, body: 'Método no permitido' };
+    return {
+      statusCode: 405,
+      headers: { ...securityHeaders, 'Content-Type': 'application/json; charset=utf-8', Allow: 'GET, POST' },
+      body: JSON.stringify({ error: 'Método no permitido.' }),
+    };
   }
   return {
     statusCode: 200,

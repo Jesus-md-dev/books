@@ -1,3 +1,3 @@
 /admin /.netlify/functions/admin 200!
-/admin/refresh /.netlify/functions/admin?action=refresh 200!
+/admin/refresh /.netlify/functions/admin 200!
 /*  /index.html  200
