@@ -10,18 +10,24 @@ html { color-scheme: light; }
 html.dark { color-scheme: dark; }
 
 #root {
-  @apply relative flex min-h-screen flex-col bg-repeat bg-[url('./assets/texture.webp')];
+  @apply relative flex min-h-screen flex-col;
 }
 
-/* The paper texture is light: in dark mode the plain canvas is used instead. */
-.dark #root {
-  background-image: none;
-}
-
-/* Green tint over the paper texture. */
+/* Paper texture fixed to the viewport and scaled to cover it, so it never
+   tiles (no seams on wide screens or long pages), with a green tint on top. */
 #root::before {
-  @apply pointer-events-none absolute inset-0 z-0 bg-tint/[.37];
+  @apply pointer-events-none fixed inset-0 z-0;
   content: '';
+  background:
+    linear-gradient(rgb(var(--color-tint) / .37), rgb(var(--color-tint) / .37)),
+    url('./assets/texture.webp') center / cover no-repeat;
+}
+
+/* Dark mode keeps the paper, darkened by the canvas colour. */
+.dark #root::before {
+  background:
+    linear-gradient(rgb(var(--color-canvas) / .86), rgb(var(--color-canvas) / .86)),
+    url('./assets/texture.webp') center / cover no-repeat;
 }
 
 .content {
