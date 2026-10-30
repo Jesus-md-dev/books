@@ -1,15 +1,19 @@
 // App.js
 
+import { lazy, Suspense } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
-import BookList from './pages/BookList';
-import BookPage from './pages/BookPage';
-import DrawBook from './pages/DrawBook';
 import Home from './pages/Home';
-import Stats from './pages/Stats';
-import Members from './pages/Members';
+import Loading from './component/loading';
 import PageMeta from './component/PageMeta';
 import "./App.css";
 import { BooksProvider } from './data/BooksContext';
+
+// Home stays eager (landing page); the rest load on demand.
+const BookList = lazy(() => import('./pages/BookList'));
+const BookPage = lazy(() => import('./pages/BookPage'));
+const DrawBook = lazy(() => import('./pages/DrawBook'));
+const Stats = lazy(() => import('./pages/Stats'));
+const Members = lazy(() => import('./pages/Members'));
 
 
 const App = () => {
@@ -18,6 +22,7 @@ const App = () => {
       <BooksProvider>
       <>
          <PageMeta />
+         <Suspense fallback={<Loading />}>
          <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/libros" element={<BookList />} />
@@ -27,6 +32,7 @@ const App = () => {
             <Route path="/socios" element={<Members />} />
             <Route path="*" element={<Navigate to="/" replace />} />
          </Routes>
+         </Suspense>
          <link rel="dns-prefetch" href="https://books.google.com"></link>
          <link rel="dns-prefetch" href="https://sheets.googleapis.com"></link>
       </>
