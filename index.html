@@ -4,7 +4,21 @@
     <meta charset="utf-8" />
     <link rel="icon" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
+    <meta name="theme-color" content="#9fd1a6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1e4a2a" media="(prefers-color-scheme: dark)" />
+    <script>
+      /* Applies the saved or system colour scheme before first paint (see src/hooks/useDarkMode.js). */
+      (function () {
+        var dark = false;
+        try {
+          var saved = localStorage.getItem('bahia-lectora:theme');
+          dark = saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        } catch (e) {}
+        var root = document.documentElement;
+        if (dark) root.classList.add('dark');
+        root.style.colorScheme = dark ? 'dark' : 'light';
+      })();
+    </script>
     <link rel="manifest" href="/manifest.json" />
     <title>Bahía Lectora</title>
 

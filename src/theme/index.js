@@ -1,17 +1,18 @@
 import { createTheme } from '@mui/material/styles';
 import tokens from './tokens.json';
 
-const c = tokens.light;
 const sans = tokens.fonts.sans.join(', ');
 const display = tokens.fonts.display.join(', ');
 
 /**
- * Light MUI theme built from the same tokens as Tailwind (tokens.json), so MUI
+ * MUI themes (light and dark) built from the same tokens as Tailwind (tokens.json), so MUI
  * components (Button, Menu, DataGrid...) and Tailwind classes share one palette.
  */
-const theme = createTheme({
+const buildTheme = (mode) => {
+  const c = tokens[mode];
+  return createTheme({
   palette: {
-    mode: 'light',
+    mode,
     primary: { main: c.primary, dark: c['primary-strong'], contrastText: c['on-primary'] },
     success: { main: c.primary, dark: c['primary-strong'], contrastText: c['on-primary'] },
     error: { main: c.danger },
@@ -38,6 +39,9 @@ const theme = createTheme({
         },
       },
     },
+    MuiPaper: {
+      styleOverrides: { root: { backgroundImage: 'none' } },
+    },
     MuiButton: {
       defaultProps: { disableElevation: true },
     },
@@ -57,5 +61,8 @@ const theme = createTheme({
     },
   },
 });
+};
 
-export default theme;
+export const lightTheme = buildTheme('light');
+export const darkTheme = buildTheme('dark');
+export default lightTheme;

@@ -4,6 +4,9 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import DarkModeIcon from '@mui/icons-material/DarkMode';
+import LightModeIcon from '@mui/icons-material/LightMode';
+import { useThemeMode } from '../theme/ThemeModeProvider';
 import "../App.css";
 
 const LINKS = [
@@ -18,6 +21,7 @@ const LINKS = [
  */
 const Navigation = () => {
   const [anchorElNav, setAnchorElNav] = React.useState(null);
+  const { isDark, toggle } = useThemeMode();
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
   };
@@ -69,6 +73,17 @@ const Navigation = () => {
             </li>
           ))}
         </ul>
+        <IconButton
+          className="ml-auto"
+          size="large"
+          color="inherit"
+          aria-label={isDark ? 'Activar modo claro' : 'Activar modo oscuro'}
+          aria-pressed={isDark}
+          onClick={toggle}
+          edge="end"
+        >
+          {isDark ? <LightModeIcon /> : <DarkModeIcon />}
+        </IconButton>
       </nav>
     </header>
   );

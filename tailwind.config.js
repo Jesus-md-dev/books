@@ -51,6 +51,9 @@ module.exports = {
       addBase({ ':root': cssVars(tokens.light) });
       // A "dark" scheme added to tokens.json is applied under <html class="dark">.
       if (tokens.dark) addBase({ '.dark': cssVars(tokens.dark) });
+      // "Paper" elements (torn-paper bands, rating badges) are drawn with fixed light
+      // artwork, so they keep the light scheme inside dark mode.
+      addBase({ '.dark .paper-band, .dark .voto, .dark .media': cssVars(tokens.light) });
     }),
   ],
 }

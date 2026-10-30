@@ -1,6 +1,6 @@
 /* Rating badges: achievement.svg tinted per member (--hue set in BookPage.jsx). */
 .voto {
-    @apply relative z-0 mt-12 px-[4.5rem] pb-28 pt-16;
+    @apply relative z-0 mt-12 px-[4.5rem] pb-28 pt-16 text-ink;
 }
 .voto::before {
     @apply pointer-events-none absolute inset-0 z-[-1] bg-contain bg-center bg-no-repeat;
@@ -10,7 +10,7 @@
 }
 
 .media {
-    @apply relative z-0 mt-12 px-[4.5rem] pb-28 pt-16;
+    @apply relative z-0 mt-12 px-[4.5rem] pb-28 pt-16 text-ink;
 }
 
 .media::before {

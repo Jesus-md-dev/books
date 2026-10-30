@@ -6,8 +6,16 @@ body {
   background-image: linear-gradient(180deg, rgb(var(--color-canvas)) 90%, rgb(var(--color-canvas-fade)) 100%);
 }
 
+html { color-scheme: light; }
+html.dark { color-scheme: dark; }
+
 #root {
   @apply relative flex min-h-screen flex-col bg-repeat bg-[url('./assets/texture.webp')];
+}
+
+/* The paper texture is light: in dark mode the plain canvas is used instead. */
+.dark #root {
+  background-image: none;
 }
 
 /* Green tint over the paper texture. */

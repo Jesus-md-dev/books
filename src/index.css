@@ -62,7 +62,7 @@
   }
   /* Full-width light band between the torn-paper decorations. */
   .paper-band {
-    @apply bg-paper px-5 py-4;
+    @apply bg-paper px-5 py-4 text-ink;
   }
   .prose-text {
     @apply mx-auto max-w-3xl text-base leading-relaxed sm:text-lg;
