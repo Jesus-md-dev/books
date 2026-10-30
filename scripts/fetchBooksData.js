@@ -20,6 +20,7 @@ const {
   googleBooksQueries,
 } = require('./bookCatalog');
 const { translateBookMetadata } = require('./translateBookMetadata');
+const { validateSheetData } = require('./sheetValidation');
 const { isFallbackSheet, matchRuletaCandidates, parseRuletaRows } = require('./ruleta');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
@@ -407,7 +408,13 @@ async function main() {
     console.warn(`[fetchBooksData] No se pudo leer "Medias"; se usará la búsqueda por título: ${error.message}`);
   }
 
-  let gridBooks = computeBooks(librosRows, actualTitle, catalogRows, actualBook.autor);
+  const validated = validateSheetData({ librosRows, catalogRows });
+  validated.warnings.forEach((warning) => console.warn(`[fetchBooksData] ⚠ ${warning}`));
+  if (validated.warnings.length > 0) {
+    console.warn(`[fetchBooksData] ⚠ ${validated.warnings.length} aviso(s) en los datos de la hoja; revísalos en Google Sheets.`);
+  }
+
+  let gridBooks = computeBooks(validated.librosRows, actualTitle, validated.catalogRows, actualBook.autor);
   console.log(`[fetchBooksData] Calculados ${gridBooks.length} libros.`);
 
   const overrides = loadOverrides();

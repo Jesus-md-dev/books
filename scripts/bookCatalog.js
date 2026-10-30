@@ -73,5 +73,6 @@ module.exports = {
   createCatalogMap,
   getCatalogAuthor,
   googleBooksQueries,
+  normalizeHeader,
   normalizeTitle,
 };
