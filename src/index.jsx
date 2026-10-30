@@ -6,7 +6,6 @@ import './index.css';
 import Footer from './layout/Footer';
 import Navigation from './layout/Navigation';
 import { ThemeModeProvider } from './theme/ThemeModeProvider';
-import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -24,5 +23,3 @@ root.render(
   </React.StrictMode>
 
 );
-
-reportWebVitals();
