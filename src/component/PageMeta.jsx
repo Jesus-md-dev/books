@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useBooks } from '../data/BooksContext';
 
-const SITE_URL = 'https://bahia-lectora.jzmarquez.com';
+export const SITE_URL = 'https://bahia-lectora.jzmarquez.com';
 const SITE = 'Bahía Lectora';
 
 const PAGES = {

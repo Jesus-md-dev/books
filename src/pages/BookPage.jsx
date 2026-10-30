@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import Stars from '../component/stars';
 import { useBooks } from '../data/BooksContext';
 import comentariosData from '../data/comentarios.json';
+import ShareButton from '../component/ShareButton';
+import { bookPath } from '../utils/bookPath';
 import './BookPage.css';
 import NoService from '../component/noService';
 import topRoto from '../assets/top.webp';
@@ -99,6 +101,13 @@ const BookPage = () => {
                         <h1 className="mb-1">{titulo}</h1>
                         {autor && autor !== 'Desconocido' && <p className="text-lg text-muted">{autor}</p>}
                         {descripcion && <p className="prose-text mt-4 text-left sm:text-center">{descripcion}</p>}
+                        <div className="mt-4 flex justify-center">
+                            <ShareButton
+                                path={bookPath(titulo)}
+                                title={titulo}
+                                text={autor && autor !== 'Desconocido' ? `${titulo}, de ${autor}` : titulo}
+                            />
+                        </div>
                         <dl className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-3 text-sm sm:grid-cols-4">
                             {details.map(([label, value]) => (
                                 <div key={label} className="rounded-lg border border-line bg-surface px-3 py-2">
