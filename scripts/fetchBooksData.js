@@ -22,12 +22,14 @@ const {
 const { translateBookMetadata } = require('./translateBookMetadata');
 const { improveBook } = require('./covers');
 const { validateSheetData } = require('./sheetValidation');
+const { groupComments, parseCommentRows } = require('./comments');
 const { isFallbackSheet, matchRuletaCandidates, parseRuletaRows } = require('./ruleta');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 const OUT_PATH = path.join(__dirname, '..', 'src', 'data', 'books.json');
 const CANDIDATOS_PATH = path.join(__dirname, '..', 'src', 'data', 'candidatos.json');
+const COMENTARIOS_PATH = path.join(__dirname, '..', 'src', 'data', 'comentarios.json');
 const OVERRIDES_PATH =path.join(__dirname, 'bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 
@@ -389,6 +391,34 @@ async function buildRuleta(knownBooks, overrides, catalogRows, canSearch) {
   console.log(`[fetchBooksData] Escrito ${CANDIDATOS_PATH}`);
 }
 
+// Comments of the "Comentarios" tab -> src/data/comentarios.json ({ titulo: [{ socio, comentario }] }).
+// Build-time only; a missing or empty tab gives {}. Never fails the build.
+async function buildComentarios(books, catalogRows) {
+  let comentarios = {};
+  try {
+    console.log('[fetchBooksData] Leyendo hoja "Comentarios"...');
+    let rows = await fetchSheetRows(SHEET_ID, 'Comentarios');
+    if (isFallbackSheet(rows, catalogRows)) {
+      console.warn('[fetchBooksData] La hoja "Comentarios" no existe (Sheets devolvió la primera hoja).');
+      rows = [];
+    }
+    const comments = parseCommentRows(rows);
+    if (comments.length === 0) console.warn('[fetchBooksData] La hoja "Comentarios" está vacía; comentarios.json será {}.');
+    const grouped = groupComments(comments, books.map((book) => book.titulo));
+    comentarios = grouped.comentarios;
+    grouped.unmatched.forEach(({ libro, socio }) => {
+      console.warn(`[fetchBooksData] ⚠ Comentario de "${socio || 'sin nombre'}" sobre "${libro}": ese libro no está en la lista, se ignora.`);
+    });
+    console.log(`  -> ${comments.length - grouped.unmatched.length} comentarios en ${Object.keys(comentarios).length} libro(s)`);
+  } catch (error) {
+    console.warn(`[fetchBooksData] No se pudo leer la hoja "Comentarios" (${error.message}); comentarios.json será {}.`);
+    comentarios = {};
+  }
+  fs.writeFileSync(COMENTARIOS_PATH, JSON.stringify(comentarios, null, 2) + '
+');
+  console.log(`[fetchBooksData] Escrito ${COMENTARIOS_PATH}`);
+}
+
 async function main() {
   const forceFullRefresh = process.env.INCOMING_HOOK_TITLE === 'Forzar regeneración completa';
   console.log('[fetchBooksData] Leyendo hoja "Libros"...');
@@ -508,6 +538,7 @@ async function main() {
   console.log(`[fetchBooksData] Escrito ${OUT_PATH}`);
 
   await buildRuleta(gridBooks, overrides, catalogRows, isGoogleBooksAvailable);
+  await buildComentarios(gridBooks, catalogRows);
 }
 
 main().catch((err) => {

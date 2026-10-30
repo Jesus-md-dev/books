@@ -2,6 +2,7 @@
 import { Link, useParams } from 'react-router-dom';
 import Stars from '../component/stars';
 import { useBooks } from '../data/BooksContext';
+import comentariosData from '../data/comentarios.json';
 import './BookPage.css';
 import NoService from '../component/noService';
 import topRoto from '../assets/top.webp';
@@ -58,6 +59,9 @@ const BookPage = () => {
         media,
         votos = []
     } = book || {};
+
+    // Build-time comments from the "Comentarios" tab, keyed by the book title.
+    const comentarios = comentariosData[titulo] || [];
 
     let sumSub = true;
     votos.forEach(voto => {
@@ -135,6 +139,21 @@ const BookPage = () => {
                                             <Stars n={puntuation['voto']} /> {puntuation['voto']}
                                         </p>
                                     </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
+                {comentarios.length > 0 && (
+                    <section className="mt-10 w-full max-w-3xl" aria-labelledby="comentarios-title">
+                        <h2 id="comentarios-title" className="section-title">Comentarios del club</h2>
+                        <ul className="mt-4 flex flex-col gap-3">
+                            {comentarios.map((comentario, index) => (
+                                <li key={`${comentario.socio}-${index}`} className="rounded-lg border border-line bg-surface px-4 py-3 text-left">
+                                    <blockquote className="whitespace-pre-line break-words">{comentario.comentario}</blockquote>
+                                    {comentario.socio && (
+                                        <p className="mt-2 text-sm font-semibold text-muted">— {comentario.socio}</p>
+                                    )}
                                 </li>
                             ))}
                         </ul>
