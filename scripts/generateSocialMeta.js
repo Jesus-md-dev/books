@@ -52,7 +52,8 @@ function main() {
     const html = baseHtml.replace(BLOCK_RE, () => bookBlock(book))
       .replace(/<title>[^<]*<\/title>/, () => `<title>${seo.escapeHtml(bookTitle)} · ${seo.SITE_NAME}</title>`);
 
-    const dir = path.join(BUILD_DIR, 'libro', encodeURIComponent(bookTitle));
+    // Netlify decodes the request path before looking up files, so the folder must be the raw title, not its %-encoded form.
+    const dir = path.join(BUILD_DIR, 'libro', bookTitle.normalize('NFC').replace(/[\/:*?"<>|]/g, '-'));
     fs.mkdirSync(dir, { recursive: true });
     fs.writeFileSync(path.join(dir, 'index.html'), html);
     written += 1;

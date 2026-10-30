@@ -20,6 +20,9 @@ jobs:
 
       - run: npm ci
 
+      # Syntax-check the build scripts: `npm test` does not load fetchBooksData.js, which Netlify runs as `prebuild`.
+      - run: for f in scripts/*.js netlify/functions/*.js; do node --check "$f"; done
+
       - run: npm test
 
       # Not `npm run build`: its prebuild fetches the Google Sheet and needs credentials.
