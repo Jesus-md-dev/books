@@ -1,11 +1,12 @@
 
 import { useState } from 'react';
-import Button from '@mui/material/Button';
+import { Link } from 'react-router-dom';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import NoService  from '../component/noService';
 import { useBooks } from '../data/BooksContext';
 import { loadColumnVisibility, saveColumnVisibility } from '../utils/columnVisibility';
+import { bookPath } from '../utils/bookPath';
 
 const columns = [
   {
@@ -14,6 +15,11 @@ const columns = [
     flex: 1,
     minWidth: 200,
     editable: false,
+    renderCell: (params) => (
+      <Link to={bookPath(params.row.titulo)} className='font-semibold text-ink underline-offset-2 hover:underline' tabIndex={params.tabIndex}>
+        {params.value}
+      </Link>
+    ),
   },
   {
     field: 'imagen',
@@ -23,9 +29,9 @@ const columns = [
     editable: false,
     align: 'center',
     renderCell: (params) => (
-      <Button href={'/libro/' +  params.row.titulo} className='flex justify-center w-auto h-full'>
-        <img alt="Portada libro" className='object-contain my-1 h-full' src={params.value}/>
-      </Button>
+      <Link to={bookPath(params.row.titulo)} className='flex h-full w-auto justify-center rounded py-2' tabIndex={params.tabIndex}>
+        <img alt={`Portada de ${params.row.titulo}`} className='h-full rounded-sm object-contain shadow' src={params.value} loading='lazy' width={90} height={134} />
+      </Link>
     ),
   },
   {
@@ -82,8 +88,10 @@ const BookList = () => {
 
   return (
     <div className="content-center-straight">
+      <h1 className="page-title">Lista de libros</h1>
       <DataGrid
-        className="bg-white"
+        className="shadow-sm"
+        autoHeight
         rowHeight={150}
         rows={dataBooks}
         columns={columns}

@@ -1,7 +1,7 @@
 .wheel-wrapper {
   position: relative;
   /* Fill most of a phone screen; on desktop stay within the viewport height. */
-  width: min(calc(100vw - 1rem), 75vh, 40rem);
+  width: min(calc(100vw - 1rem), 68vh, 40rem);
   aspect-ratio: 1 / 1;
 }
 
@@ -20,11 +20,12 @@
   height: 0;
   border-left: 16px solid transparent;
   border-right: 16px solid transparent;
-  border-top: 32px solid #111;
+  border-top: 32px solid rgb(var(--color-ink));
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 0.3));
 }
 
 .result-card {
-  width: min(90vw, 18rem);
+  width: min(calc(100vw - 2rem), 20rem);
   animation: result 1s ease-out;
 }
 

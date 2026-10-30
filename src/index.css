@@ -2,133 +2,92 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Colours and fonts come from src/theme/tokens.json (CSS variables --color-*,
+   Tailwind classes bg-brand, text-ink, border-line, font-display...). Do not
+   hard-code hex values here: a colour scheme only redefines the variables. */
+
 @layer base {
+  html {
+    @apply font-sans text-ink antialiased;
+    -webkit-text-size-adjust: 100%;
+  }
+  h1, h2, h3, h4 {
+    @apply font-display font-bold text-balance;
+  }
   h1 {
-    @apply text-2xl font-bold;
+    @apply text-3xl sm:text-4xl;
   }
   h2 {
-    @apply text-xl font-bold;
+    @apply text-2xl;
   }
   h3 {
-    @apply text-lg font-bold;
+    @apply text-xl;
   }
   h4 {
-    @apply text-base font-bold;
+    @apply text-lg;
   }
   h5 {
-    @apply text-sm font-bold;
+    @apply text-base font-bold;
+  }
+  /* Visible focus for every keyboard-focusable element (MUI buttons get the
+     same ring from the theme). */
+  :focus-visible {
+    @apply outline outline-[3px] outline-offset-2 outline-focus;
+  }
+  [tabindex="-1"]:focus {
+    outline: none;
   }
 }
 
-@layer utilities {
-  .text-balance {
-    @apply text-balance;
+@layer components {
+  /* Page heading, shared by every route. */
+  .page-title {
+    @apply mb-6 mt-2 text-center;
   }
-}
-
-#root {
-  @apply relative min-h-screen bg-repeat bg-[url('./assets/texture.webp')];
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-#root::before {
-  @apply absolute block h-full w-full z-[0] bg-[#bbdabe5e];
-  content: '';
-}
-
-.App {
-  @apply text-center;
-}
-
-.App-logo {
-  @apply pointer-events-none h-[40vmin];
-}
-
-.App-header {
-  @apply bg-[#282c34] flex flex-col items-center justify-center text-white min-h-screen text-[calc(10px+2vmin)];
-}
-
-.App-link {
-  @apply text-[#61dafb];
-}
-
-.content {
-  @apply pt-10 pb-28 relative z-[1];
-}
-
-.footer,
-.header,
-.main-color {
-  @apply bg-[#9fd1a6];
-  background-image: linear-gradient(45deg, #9fd1a6 75%, #d6efda 100%);
-}
-
-.MuiButton-text {
-  @apply rounded;
-}
-
-.map h1 {
-  text-shadow: 2px 0 #000, -2px 0 #000, 0 2px #000, 0 -2px #000, 1px 1px #000, -1px -1px #000, 1px -1px #000, -1px 1px #000;
-}
-
-.menu-item {
-  @apply font-bold;
-}
-
-main {
-  @apply mt-[2%];
-}
-
-body {
-  @apply h-full w-full bg-white absolute;
-  background-image: linear-gradient(180deg, #ffffff 90%, #e3ffe3 100%);
-}
-
-.MuiContainer-root {
-  @apply max-w-full p-0 !important;
-}
-
-.content-center-straight {
-  @apply mx-auto px-4 max-w-screen-2xl w-full;
-}
-
-.top-roto,
-.bottom-roto {
-    @apply w-full;
-}
-
-/* Dark mode overrides. Targets the shared utility classes already used
-   throughout the app (text-black, bg-white, etc.) instead of touching
-   every component, since this codebase applies colors inline via Tailwind
-   utilities rather than semantic classes. */
-.dark body {
-  @apply bg-gray-900;
-  background-image: linear-gradient(180deg, #111827 90%, #1f2937 100%);
-}
-
-.dark #root::before {
-  @apply bg-[#0f1f14aa];
-}
-
-.dark .footer,
-.dark .header,
-.dark .main-color {
-  @apply bg-[#1f3d27];
-  background-image: linear-gradient(45deg, #1f3d27 75%, #14251a 100%);
-}
-
-.dark .text-black {
-  @apply text-gray-100;
-}
-
-.dark h1,
-.dark h2,
-.dark h3,
-.dark h4,
-.dark h5 {
-  @apply text-gray-50;
-}
-
-.dark .bg-white {
-  @apply bg-gray-800;
+  .page-intro {
+    @apply mx-auto -mt-3 mb-8 max-w-2xl text-center text-muted;
+  }
+  .section-title {
+    @apply mb-4 text-center;
+  }
+  .section {
+    @apply mb-12;
+  }
+  /* White card on the textured background. */
+  .card {
+    @apply rounded-xl border border-line bg-surface p-5 shadow-sm;
+  }
+  .text-muted-sm {
+    @apply text-sm text-muted;
+  }
+  /* Full-width light band between the torn-paper decorations. */
+  .paper-band {
+    @apply bg-paper px-5 py-4;
+  }
+  .prose-text {
+    @apply mx-auto max-w-3xl text-base leading-relaxed sm:text-lg;
+  }
+  /* Book cover inside a link (see component/BookCover.jsx). */
+  .cover-link {
+    @apply inline-flex flex-col items-center rounded-md text-center no-underline;
+  }
+  .cover-img {
+    @apply rounded-sm border-4 border-ink bg-surface shadow-md transition-transform duration-200 motion-safe:group-hover:-translate-y-1 group-hover:shadow-lg;
+  }
+  .cover-caption {
+    @apply mt-2 line-clamp-2 max-w-[10rem] text-sm font-semibold group-hover:underline;
+  }
+  /* Responsive grid of covers. */
+  .cover-grid {
+    @apply grid grid-cols-2 justify-items-center gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6;
+  }
+  .chip {
+    @apply rounded-full border border-line bg-surface px-4 py-2 shadow-sm;
+  }
+  .text-link {
+    @apply font-semibold text-primary-strong underline underline-offset-2 hover:no-underline;
+  }
+  .skip-link {
+    @apply absolute left-2 top-2 z-50 -translate-y-24 rounded bg-surface px-4 py-2 font-bold text-ink shadow focus:translate-y-0;
+  }
 }

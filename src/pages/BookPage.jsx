@@ -1,18 +1,18 @@
 
-import { useParams } from 'react-router-dom';
-import Grid from '@mui/material/Grid2';
+import { Link, useParams } from 'react-router-dom';
 import Stars from '../component/stars';
 import { useBooks } from '../data/BooksContext';
 import './BookPage.css';
 import NoService from '../component/noService';
-import topRoto from '../assets/top.svg';
-import bottomRoto from '../assets/bottom.svg';
+import topRoto from '../assets/top.webp';
+import bottomRoto from '../assets/bottom.webp';
 
 function normalizeBookTitle(value) {
     return String(value || '')
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .trim()
+        .replace(/\s+/g, ' ')
         .toLocaleLowerCase();
 }
 
@@ -35,7 +35,14 @@ const BookPage = () => {
     }
 
     if (!book) {
-        return <div>Libro no encontrado.</div>;
+        return (
+            <div className="content-center-straight">
+                <div className="card mx-auto max-w-md text-center">
+                    <h1 className="mb-3 text-2xl">Libro no encontrado</h1>
+                    <Link to="/libros" className="text-link">Ver la lista de libros</Link>
+                </div>
+            </div>
+        );
     }
 
     // Destructure with fallback values
@@ -61,70 +68,80 @@ const BookPage = () => {
             titulo.split('(')[0].replace(' ', '').split("").map(ch => ch.charCodeAt(0)).join("") % 360
         sumSub = !sumSub;
         voto.hue = Math.abs(value) % 360 + 'deg';
-        console.log(`Rotation de ${voto.nombre}: ${voto.hue}`);
     });
 
+    const details = [
+        ['Fecha de publicación', fecha_publicacion],
+        ['Categorías', categorias.join(', ')],
+        ['Editorial', editorial],
+        ['Páginas', n_paginas],
+    ].filter(([, value]) => value !== '' && value !== undefined && value !== null);
+
     return (
-        <div>
+        <article>
             <div className='content-center-straight flex flex-col items-center'>
-                <div className="flex w-auto max-h-full">
-                    <img
-                        className="book-image object-contain my-1 h-full border-4 border-slate-950"
-                        src={imagen}
-                        alt={titulo}
-                    />
-                </div>
+                <img
+                    className="book-image cover-img object-contain"
+                    src={imagen}
+                    alt={`Portada de ${titulo}`}
+                    loading="eager"
+                />
             </div>
             <div>
-                <img className='top-roto' src={topRoto} alt='Top decoration' />
+                <img className='top-roto' src={topRoto} alt="" aria-hidden="true" width={2400} height={203} />
 
-                <div className="w-auto text-center descripcion">
+                <div className="paper-band text-center">
                     <div className='content-center-straight'>
-                        <h1>{titulo}</h1>
-                        {autor && autor !== 'Desconocido' && <p><b>Autor/a:</b> {autor}</p>}
-                        <p className="mt-2">
-                            {descripcion}
-                        </p>
-                        <p><b>Fecha de publicación:</b> {fecha_publicacion}</p>
-                        <p><b>Categorías:</b> {categorias.join(', ')}</p>
-                        <p className="mt-2">
-                            <b>Editorial:</b> {editorial} - <b>Páginas:</b> {n_paginas}
-                        </p>
+                        <h1 className="mb-1">{titulo}</h1>
+                        {autor && autor !== 'Desconocido' && <p className="text-lg text-muted">{autor}</p>}
+                        {descripcion && <p className="prose-text mt-4 text-left sm:text-center">{descripcion}</p>}
+                        <dl className="mx-auto mt-6 grid max-w-3xl grid-cols-2 gap-3 text-sm sm:grid-cols-4">
+                            {details.map(([label, value]) => (
+                                <div key={label} className="rounded-lg border border-line bg-surface px-3 py-2">
+                                    <dt className="font-semibold text-muted">{label}</dt>
+                                    <dd className="break-words">{value}</dd>
+                                </div>
+                            ))}
+                        </dl>
                     </div>
                 </div>
 
-                <img className='bottom-roto' src={bottomRoto} alt='Bottom decoration' />
+                <img className='bottom-roto' src={bottomRoto} alt="" aria-hidden="true" width={2400} height={262} />
             </div>
             <div className='content-center-straight flex flex-col items-center'>
                 {media !== 0 && (
-                    <div className="media flex flex-col text-center text-black mt-2 ">
-                        <h1>Media</h1>
-                        <h3>
-                            <Stars n={media} className="ml-1" /> {media}
-                        </h3>
-                    </div>
+                    <section className="media flex flex-col text-center" aria-labelledby="media-title">
+                        <h2 id="media-title">Media</h2>
+                        <p className="mt-1 flex flex-col items-center gap-1 text-xl font-bold">
+                            <Stars n={media} /> {media}
+                        </p>
+                    </section>
                 )}
-                <Grid container className="justify-evenly mt-10">
-                    {votos.map(puntuation => (
-                        <Grid
-                            key={puntuation['nombre']}
-                            size="auto"
-                            className={"voto justify-center flex p-2"}
-                            style={{
-                                '--hue': `${puntuation['hue']}`
-                            }}
-                        >
-                            <div className="text-center text-black">
-                                <h3>{puntuation['nombre']}</h3>
-                                <h4>
-                                    <Stars n={puntuation['voto']} /> {puntuation['voto']}
-                                </h4>
-                            </div>
-                        </Grid>
-                    ))}
-                </Grid>
+                {votos.length > 0 && (
+                    <section className="mt-6 w-full" aria-labelledby="votos-title">
+                        <h2 id="votos-title" className="section-title">Valoraciones</h2>
+                        <ul className="flex flex-wrap justify-evenly">
+                            {votos.map(puntuation => (
+                                <li
+                                    key={puntuation['nombre']}
+                                    className="voto flex justify-center"
+                                    style={{
+                                        '--hue': `${puntuation['hue']}`
+                                    }}
+                                >
+                                    <div className="text-center">
+                                        <h3 className="text-lg">{puntuation['nombre']}</h3>
+                                        <p className="mt-1 flex flex-col items-center gap-1 font-bold">
+                                            <Stars n={puntuation['voto']} /> {puntuation['voto']}
+                                        </p>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
+                )}
             </div>
-        </div>
+        </article>
     );
 };
 

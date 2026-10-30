@@ -5,16 +5,18 @@
 const Footer = () => {
   const year = new Date().getFullYear();
   return (
-    <div className="bg-black w-full bottom-0 footer" style={{ height: '5rem', position: 'absolute', zIndex: 10 }}>
-      <div className='content-center-straight h-full'>
-        <div className="flex justify-between items-center" style={{ height: '100%' }}>
-          <span className="font-semibold">Copyright © {year}</span>
-          <a href="https://www.instagram.com/bahia.lectora/">
-            <img alt="Instagram" src="/instagram.svg" style={{ height: '1.5rem', width: '1.5rem' }} />
-          </a>
-        </div>
+    <footer className="footer">
+      <div className="content-center-straight flex min-h-20 items-center justify-between gap-4 py-4">
+        <span className="font-semibold">© {year} Bahía Lectora</span>
+        <a
+          href="https://www.instagram.com/bahia.lectora/"
+          className="flex items-center gap-2 rounded px-2 py-1 font-semibold text-ink hover:underline"
+        >
+          <img alt="" src="/instagram.svg" className="h-6 w-6" width={24} height={24} />
+          <span>Instagram</span>
+        </a>
       </div>
-    </div>
+    </footer>
   );
 };
 

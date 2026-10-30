@@ -1,0 +1,44 @@
+/* App shell: textured background, header, content and footer.
+   Colours come from the tokens in src/theme/tokens.json (see index.css). */
+
+body {
+  @apply min-h-screen bg-canvas;
+  background-image: linear-gradient(180deg, rgb(var(--color-canvas)) 90%, rgb(var(--color-canvas-fade)) 100%);
+}
+
+#root {
+  @apply relative flex min-h-screen flex-col bg-repeat bg-[url('./assets/texture.webp')];
+}
+
+/* Green tint over the paper texture. */
+#root::before {
+  @apply pointer-events-none absolute inset-0 z-0 bg-tint/[.37];
+  content: '';
+}
+
+.content {
+  @apply relative z-[1] flex-1 pb-16 pt-8 sm:pt-10;
+}
+
+.footer,
+.header {
+  @apply relative z-[1] bg-brand;
+  background-image: linear-gradient(45deg, rgb(var(--color-brand)) 75%, rgb(var(--color-brand-soft)) 100%);
+}
+
+.content-center-straight {
+  @apply mx-auto w-full max-w-screen-2xl px-4 sm:px-6;
+}
+
+.top-roto,
+.bottom-roto {
+  @apply block h-auto w-full select-none;
+}
+
+.nav-link {
+  @apply rounded px-3 py-2 text-lg font-semibold text-ink no-underline decoration-2 underline-offset-8 hover:underline;
+}
+
+.nav-link.active {
+  @apply underline;
+}

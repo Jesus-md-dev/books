@@ -6,12 +6,15 @@ import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import './DrawBook.css';
 import initialCandidates from '../data/candidatos.json';
 import { createWheelSounds } from '../utils/wheelSounds';
+import tokens from '../theme/tokens.json';
 
 const SIZE = 320;
 const CENTER = SIZE / 2;
 const RADIUS = 150;
 const MUTED_KEY = 'ruleta-silenciada';
-const COLORS = ['#2e7d32', '#1565c0', '#ef6c00', '#6a1b9a', '#c62828', '#00838f', '#9e9d24', '#ad1457', '#4527a0', '#37474f'];
+// Segment colours keep white labels at 4.5:1 or more (WCAG AA).
+const COLORS = tokens.wheel.segments;
+const LABEL = tokens.wheel.text;
 
 const prefersReducedMotion = () =>
   typeof window !== 'undefined' &&
@@ -73,16 +76,16 @@ const Wheel = ({ books, rotation, duration, animate, svgRef }) => {
           const center = start + step / 2;
           return (
             <g key={book.id}>
-              <path d={segmentPath(start, start + step)} fill={COLORS[i % COLORS.length]} stroke='#fff' strokeWidth='2' />
+              <path d={segmentPath(start, start + step)} fill={COLORS[i % COLORS.length]} stroke={LABEL} strokeWidth='2' />
               <g transform={`rotate(${center - 90} ${CENTER} ${CENTER})`}>
-                <text x={CENTER + RADIUS - 10} y={CENTER} textAnchor='end' dominantBaseline='middle' fill='#fff' fontSize={fontSize}>
+                <text x={CENTER + RADIUS - 10} y={CENTER} textAnchor='end' dominantBaseline='middle' fill={LABEL} fontSize={fontSize}>
                   {shorten(book.titulo, maxChars)}
                 </text>
               </g>
             </g>
           );
         })}
-        <circle cx={CENTER} cy={CENTER} r='12' fill='#fff' />
+        <circle cx={CENTER} cy={CENTER} r='12' fill={LABEL} />
       </svg>
     </div>
   );
@@ -145,8 +148,9 @@ const DrawBook = () => {
 
   if (candidates.length === 0) {
     return (
-      <div className='draw-page flex flex-col items-center mt-[10vh] px-4 text-center'>
-        <p>Añade candidatos en la hoja Candidatos</p>
+      <div className='content-center-straight draw-page'>
+        <h1 className='page-title'>Sorteo del próximo libro</h1>
+        <p className='card mx-auto max-w-md text-center'>Añade candidatos en la hoja Candidatos</p>
       </div>
     );
   }
@@ -217,21 +221,20 @@ const DrawBook = () => {
   };
 
   return (
-    <div className='draw-page flex flex-col items-center mt-[3vh] px-2'>
+    <div className='draw-page flex flex-col items-center px-2'>
+      <h1 className='page-title'>Sorteo del próximo libro</h1>
       {winner ? (
-        <>
-          <h2 className='text-xl mb-2'>¡Próximo libro!</h2>
-          <div className='flex flex-col justify-center items-center text-center text-black result-card'>
-            {winner['imagen'] && <img className='my-1 w-24' src={winner['imagen']} alt={winner['titulo']} />}
-            <h5>{winner['titulo']}</h5>
-            <h5>{[winner['autor'], winner['n_paginas'] ? winner['n_paginas'] + ' Páginas' : ''].filter(Boolean).join(' - ')}</h5>
-          </div>
-        </>
+        <div className='card result-card flex flex-col items-center justify-center text-center' role='status'>
+          <h2 className='mb-3 text-2xl'>¡Próximo libro!</h2>
+          {winner['imagen'] && <img className='cover-img my-1 w-32' src={winner['imagen']} alt={`Portada de ${winner['titulo']}`} />}
+          <p className='mt-3 font-display text-lg font-bold'>{winner['titulo']}</p>
+          <p className='text-muted'>{[winner['autor'], winner['n_paginas'] ? winner['n_paginas'] + ' páginas' : ''].filter(Boolean).join(' · ')}</p>
+        </div>
       ) : (
         <>
           <Wheel books={remaining} rotation={rotation} duration={duration} animate={animate} svgRef={svg} />
           <div className='mt-4 flex items-center gap-2'>
-            <Button variant='contained' color='success' onClick={spin} disabled={spinning}>
+            <Button variant='contained' color='primary' size='large' onClick={spin} disabled={spinning}>
               {spinning ? 'Girando…' : eliminated.length === 0 ? 'Girar la ruleta' : 'Eliminar otro libro'}
             </Button>
             <IconButton onClick={toggleMuted} aria-label={muted ? 'Activar sonido' : 'Silenciar'} aria-pressed={muted}>
@@ -241,18 +244,18 @@ const DrawBook = () => {
         </>
       )}
       {eliminated.length > 0 && (
-        <div className='eliminated mt-4'>
-          <h6>Eliminados</h6>
+        <section className='eliminated card mt-6' aria-labelledby='eliminados-title' aria-live='polite'>
+          <h2 id='eliminados-title' className='mb-2 text-lg'>Eliminados</h2>
           <ol>
             {eliminated.map((book) => (
               <li key={book.id}>{book.titulo}</li>
             ))}
           </ol>
-        </div>
+        </section>
       )}
       {(eliminated.length > 0) && (
         <div className='mt-4 mb-8'>
-          <Button variant='outlined' color='success' onClick={newDraw} disabled={spinning}>
+          <Button variant='outlined' color='primary' onClick={newDraw} disabled={spinning}>
             Reiniciar
           </Button>
         </div>

@@ -1,7 +1,7 @@
-import Grid from '@mui/material/Grid2';
 import { useBooks } from '../data/BooksContext';
 import { computeMemberStats } from '../utils/bookStats';
 import NoService from '../component/noService';
+import BookCover from '../component/BookCover';
 
 /**
  * Members page showing per-member voting stats.
@@ -17,31 +17,28 @@ const Members = () => {
 
   return (
     <div className="content-center-straight">
-      <h1 className="text-center my-5">Socios y socias</h1>
-      <Grid container spacing={4} className="justify-center mb-10">
+      <h1 className="page-title">Socios y socias</h1>
+      <ul className="mx-auto mb-10 grid max-w-6xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {members.map((m) => (
-          <Grid key={m.nombre} size="auto">
-            <div className="bg-white rounded-xl shadow p-5 text-center w-60 text-black">
-              <h3 className="mb-2">{m.nombre}</h3>
-              <p>{m.nLibros} libro{m.nLibros === 1 ? '' : 's'} valorado{m.nLibros === 1 ? '' : 's'}</p>
-              <p>Media dada: {m.media.toFixed(2)} ★</p>
-              {m.favorito && (
-                <div className="mt-3">
-                  <p className="text-sm text-gray-600">Favorito</p>
-                  <a href={'/libro/' + m.favorito.titulo} className="flex justify-center">
-                    <img
-                      className="my-1 border-4 border-slate-950 h-32"
-                      src={m.favorito.imagen}
-                      alt={m.favorito.titulo}
-                    />
-                  </a>
-                  <p className="text-sm">{m.favorito.titulo} ({m.favorito.voto} ★)</p>
-                </div>
-              )}
-            </div>
-          </Grid>
+          <li key={m.nombre} className="card flex flex-col items-center text-center">
+            <h2 className="mb-1 text-xl">{m.nombre}</h2>
+            <p className="text-muted">
+              {m.nLibros} libro{m.nLibros === 1 ? '' : 's'} valorado{m.nLibros === 1 ? '' : 's'}
+            </p>
+            <p className="mt-1 font-semibold">Media dada: {m.media.toFixed(2)} <span aria-hidden="true">★</span></p>
+            {m.favorito && (
+              <div className="mt-4 flex flex-col items-center border-t border-line pt-4">
+                <p className="text-muted-sm mb-2 font-semibold uppercase tracking-wide">Favorito</p>
+                <BookCover
+                  book={m.favorito}
+                  size="sm"
+                  caption={<>{m.favorito.titulo} ({m.favorito.voto} <span aria-hidden="true">★</span>)</>}
+                />
+              </div>
+            )}
+          </li>
         ))}
-      </Grid>
+      </ul>
     </div>
   );
 };

@@ -1,29 +1,25 @@
-.voto { 
-    @apply relative z-0 mt-[3rem] px-[4.5rem] pt-[4rem] pb-[7rem] !important;
+/* Rating badges: achievement.svg tinted per member (--hue set in BookPage.jsx). */
+.voto {
+    @apply relative z-0 mt-12 px-[4.5rem] pb-28 pt-16;
 }
 .voto::before {
-    @apply absolute inset-0 bg-no-repeat bg-contain bg-center z-[-1] pointer-events-none;
+    @apply pointer-events-none absolute inset-0 z-[-1] bg-contain bg-center bg-no-repeat;
     content: "";
     background-image: url('../assets/achievement.svg');
     filter: hue-rotate(var(--hue, 0deg)) saturate(60%);
 }
 
 .media {
-    @apply relative z-0 mt-[3rem] px-[4.5rem] pt-[4rem] pb-[7rem];
+    @apply relative z-0 mt-12 px-[4.5rem] pb-28 pt-16;
 }
 
 .media::before {
-    @apply absolute inset-0 bg-no-repeat bg-contain bg-center z-[-1] pointer-events-none;
+    @apply pointer-events-none absolute inset-0 z-[-1] bg-contain bg-center bg-no-repeat;
     content: "";
     background-image: url('../assets/achievement.svg');
     filter: hue-rotate(230deg) saturate(60%);
 }
 
 .book-image {
-    @apply mb-[3rem] max-h-[30vh] aspect-[auto];
+    @apply mb-12 max-h-[40vh] w-auto max-w-full sm:max-h-[30rem];
 }
-
-.descripcion {
-    @apply bg-[#fbfbfb] px-5;
-}
-

@@ -1,11 +1,34 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require('tailwindcss/plugin');
+// Single source of the palette and fonts, shared with the MUI theme (src/theme/index.js).
+const tokens = require('./src/theme/tokens.json');
+
+/** '#9fd1a6' -> '159 209 166', so Tailwind can add opacity (bg-brand/50). */
+const toChannels = (hex) => {
+  const h = hex.replace('#', '');
+  return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16)).join(' ');
+};
+
+const cssVars = (scheme) =>
+  Object.fromEntries(Object.entries(scheme).map(([name, hex]) => [`--color-${name}`, toChannels(hex)]));
+
 module.exports = {
   darkMode: 'class',
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      // bg-brand, text-ink, border-line... each reads a CSS variable set below, so a
+      // colour scheme only has to redefine the variables.
+      colors: Object.fromEntries(
+        Object.keys(tokens.light).map((name) => [name, `rgb(var(--color-${name}) / <alpha-value>)`])
+      ),
+      fontFamily: {
+        sans: tokens.fonts.sans,
+        display: tokens.fonts.display,
+      },
+    },
     screens: {
       'sm': '640px',
       // => @media (min-width: 640px) { ... }
@@ -23,5 +46,11 @@ module.exports = {
       // => @media (min-width: 1536px) { ... }
     },
   },
-  plugins: [],
+  plugins: [
+    plugin(({ addBase }) => {
+      addBase({ ':root': cssVars(tokens.light) });
+      // A "dark" scheme added to tokens.json is applied under <html class="dark">.
+      if (tokens.dark) addBase({ '.dark': cssVars(tokens.dark) });
+    }),
+  ],
 }

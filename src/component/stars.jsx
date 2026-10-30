@@ -10,27 +10,27 @@ const Stars = ({ n }) => {
 
     if (nStars > 0) {
         for (let i = 1; i <= Math.floor(nStars); i++) {
-            stars.push(<img key={i} alt="Star" src="/star.svg" />);
+            stars.push(<img key={i} alt="" src="/star.svg" />);
         }
         if (nStars % 1 !== 0) {
-            stars.push(<img key={nStars} alt="Half star" src="/star-half.svg" />);
+            stars.push(<img key={nStars} alt="" src="/star-half.svg" />);
         }
     } else if (nStars < 0) {
         nStars = Math.abs(nStars);
         for (let i = 1; i <= Math.floor(nStars); i++) {
-            stars.push(<img key={i} alt="Poop" src="/poop.svg" />);
+            stars.push(<img key={i} alt="" src="/poop.svg" />);
         }
         if (nStars % 1 !== 0) {
-            stars.push(<img key={nStars} alt="Half poop" src="/poop-half.svg" />);
+            stars.push(<img key={nStars} alt="" src="/poop-half.svg" />);
         }
     } else {
-        stars.push(<img key={nStars} alt="Zero" src="/zero.svg" />);
+        stars.push(<img key={nStars} alt="" src="/zero.svg" />);
     }
 
     return (
-        <div className="flex justify-center h-5">
+        <span className="inline-flex h-5 justify-center" aria-hidden="true">
             {stars}
-        </div>
+        </span>
     );
 };
 

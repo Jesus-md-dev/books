@@ -1,15 +1,16 @@
-
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
+import { Link, NavLink } from 'react-router-dom';
 import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuIcon from '@mui/icons-material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
 import "../App.css";
 
+const LINKS = [
+  { to: '/libros', label: 'Lista de libros' },
+  { to: '/estadisticas', label: 'Estadísticas' },
+  { to: '/socios', label: 'Socios' },
+];
 
 /**
  * Navigation bar component with responsive menu and logo.
@@ -26,131 +27,50 @@ const Navigation = () => {
   };
 
   return (
-    <div className="header">
-      <AppBar color="green_book" position="static" className="text-black">
-        <div className='content-center-straight'>
-          <Toolbar disableGutters>
-            <Box sx={{ flexGrow: 0.453, display: { xs: 'flex', md: 'none' } }}>
-              <IconButton
-                size="large"
-                aria-label="Abrir menú de navegación"
-                aria-controls="menu-appbar"
-                aria-haspopup="true"
-                onClick={handleOpenNavMenu}
-                color="inherit"
-              >
-                <MenuIcon />
-              </IconButton>
-              <Menu
-                id="menu-appbar"
-                anchorEl={anchorElNav}
-                anchorOrigin={{
-                  vertical: 'bottom',
-                  horizontal: 'left',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'left',
-                }}
-                open={Boolean(anchorElNav)}
-                onClose={handleCloseNavMenu}
-                sx={{ display: { xs: 'block', md: 'none' } }}
-              >
-                <MenuItem onClick={handleCloseNavMenu}>
-                  <a
-                    className="menu-item font-bold text-black"
-                    href="/libros"
-                  >
-                <Typography sx={{ fontWeight: 400 }} variant="h6">
-                  Lista de Libros
-                </Typography>
-                  </a>
-                </MenuItem>
-                <MenuItem onClick={handleCloseNavMenu}>
-                  <a
-                    className="menu-item font-bold text-black"
-                    href="/estadisticas"
-                  >
-                <Typography sx={{ fontWeight: 400 }} variant="h6">
-                  Estadísticas
-                </Typography>
-                  </a>
-                </MenuItem>
-                <MenuItem onClick={handleCloseNavMenu}>
-                  <a
-                    className="menu-item font-bold text-black"
-                    href="/socios"
-                  >
-                <Typography sx={{ fontWeight: 400 }} variant="h6">
-                  Socios
-                </Typography>
-                  </a>
-                </MenuItem>
-              </Menu>
-            </Box>
-            <a href="/" className='flex items-center'>
-              <img alt="Bahía Lectora logo" src="/logo.webp" className="mr-6 rounded-full w-10 h-10" />
-              <Typography
-                variant="h6"
-                sx={{
-                  mr: 2,
-                  fontWeight: 700,
-                  letterSpacing: '.2rem',
-                }}
-              >
-                Bahía Lectora
-              </Typography>
-            </a>
-            <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-              <a
-                className="menu-item font-bold"
-                href="/libros"
-                sx={{ my: 2, color: 'black', display: 'block' }}
-              >
-                <Typography
-                  sx={{ fontWeight: 400 }}
-                  variant="h6"
-                >
-                  Lista de Libros
-                </Typography>
-              </a>
-              <a
-                className="menu-item font-bold ml-4"
-                href="/estadisticas"
-                sx={{ my: 2, color: 'black', display: 'block' }}
-              >
-                <Typography
-                  sx={{ fontWeight: 400 }}
-                  variant="h6"
-                >
-                  Estadísticas
-                </Typography>
-              </a>
-              <a
-                className="menu-item font-bold ml-4"
-                href="/socios"
-                sx={{ my: 2, color: 'black', display: 'block' }}
-              >
-                <Typography
-                  sx={{ fontWeight: 400 }}
-                  variant="h6"
-                >
-                  Socios
-                </Typography>
-              </a>
-              {/* <Button
-                className="menu-item font-bold"
-                href="/sorteo"
-                sx={{ my: 2, color: 'black', display: 'block' }}
-              >
-                Sorteo
-              </Button> */}
-            </Box>
-          </Toolbar>
+    <header className="header shadow-sm">
+      <nav aria-label="Principal" className="content-center-straight flex min-h-16 items-center gap-2 py-2">
+        <div className="md:hidden">
+          <IconButton
+            size="large"
+            aria-label="Abrir menú de navegación"
+            aria-controls="menu-appbar"
+            aria-haspopup="true"
+            aria-expanded={Boolean(anchorElNav)}
+            onClick={handleOpenNavMenu}
+            color="inherit"
+            edge="start"
+          >
+            <MenuIcon />
+          </IconButton>
+          <Menu
+            id="menu-appbar"
+            anchorEl={anchorElNav}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+            keepMounted
+            transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+            open={Boolean(anchorElNav)}
+            onClose={handleCloseNavMenu}
+          >
+            {LINKS.map(({ to, label }) => (
+              <MenuItem key={to} component={NavLink} to={to} onClick={handleCloseNavMenu} sx={{ fontWeight: 600, minHeight: 48 }}>
+                {label}
+              </MenuItem>
+            ))}
+          </Menu>
         </div>
-      </AppBar>
-    </div>
+        <Link to="/" className="mr-4 flex items-center gap-3 rounded-full pr-2 text-ink no-underline">
+          <img alt="" src="/logo.webp" className="h-10 w-10 rounded-full" width={40} height={40} />
+          <span className="font-display text-xl font-bold tracking-wider">Bahía Lectora</span>
+        </Link>
+        <ul className="hidden items-center gap-1 md:flex">
+          {LINKS.map(({ to, label }) => (
+            <li key={to}>
+              <NavLink to={to} className="nav-link">{label}</NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </header>
   );
 };
 

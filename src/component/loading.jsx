@@ -7,7 +7,7 @@ import CircularProgress from '@mui/material/CircularProgress';
  */
 const Loading = () => (
     <div className="h-full flex justify-center">
-        <CircularProgress color="success" className="mt-[50%]" />
+        <CircularProgress color="primary" className="mt-[50%]" />
     </div>
 );
 
