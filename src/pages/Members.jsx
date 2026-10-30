@@ -1,5 +1,5 @@
 import { useBooks } from '../data/BooksContext';
-import { computeMemberStats } from '../utils/bookStats';
+import { computeMemberStats, computeMemberAffinity, MIN_SHARED_BOOKS } from '../utils/bookStats';
 import NoService from '../component/noService';
 import BookCover from '../component/BookCover';
 
@@ -14,6 +14,7 @@ const Members = () => {
   }
 
   const members = computeMemberStats(dataBooks);
+  const affinity = computeMemberAffinity(dataBooks);
 
   return (
     <div className="content-center-straight">
@@ -36,9 +37,29 @@ const Members = () => {
                 />
               </div>
             )}
+            {affinity[m.nombre] && (
+              <div className="mt-4 w-full border-t border-line pt-4">
+                <h3 className="text-muted-sm mb-2 font-semibold uppercase tracking-wide">Gustos en común</h3>
+                <p>
+                  Coincide más con <strong>{affinity[m.nombre].mas.nombre}</strong>{' '}
+                  ({affinity[m.nombre].mas.afinidad}%)
+                </p>
+                {affinity[m.nombre].menos && (
+                  <p className="mt-1">
+                    Coincide menos con <strong>{affinity[m.nombre].menos.nombre}</strong>{' '}
+                    ({affinity[m.nombre].menos.afinidad}%)
+                  </p>
+                )}
+              </div>
+            )}
           </li>
         ))}
       </ul>
+      <p className="text-muted-sm mx-auto mb-10 max-w-3xl text-center">
+        La coincidencia compara las notas de dos socios en los libros que ambos han valorado
+        (mínimo {MIN_SHARED_BOOKS}): 100% es votar igual y 0% es votar en extremos opuestos.
+        Solo aparece quien comparte suficientes lecturas con otros socios.
+      </p>
     </div>
   );
 };

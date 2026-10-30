@@ -1,7 +1,9 @@
 import { useBooks } from '../data/BooksContext';
-import { computeClubStats } from '../utils/bookStats';
+import { Link } from 'react-router-dom';
+import { computeClubStats, computeMostDivisive } from '../utils/bookStats';
 import NoService from '../component/noService';
 import BookCover from '../component/BookCover';
+import { bookPath } from '../utils/bookPath';
 
 /**
  * Stats page showing club-wide reading statistics.
@@ -14,6 +16,7 @@ const Stats = () => {
   }
 
   const stats = computeClubStats(dataBooks);
+  const divisive = computeMostDivisive(dataBooks);
 
   const cards = [
     { label: 'Libros en la bitácora', value: stats.totalLibros },
@@ -76,6 +79,20 @@ const Stats = () => {
             </section>
           ))}
         </div>
+      )}
+
+      {divisive && (
+        <section className="section card mx-auto flex max-w-xl flex-col items-center text-center" aria-labelledby="divisive-title">
+          <h2 id="divisive-title" className="mb-2 text-xl">El libro que más divide al club</h2>
+          <BookCover book={divisive.book} size="lg" />
+          <p className="mt-3 font-bold">
+            <Link to={bookPath(divisive.book.titulo)}>{divisive.book.titulo}</Link>
+          </p>
+          <p className="text-muted-sm mt-1">
+            {divisive.nVotos} votos, desde {divisive.min} hasta {divisive.max}{' '}
+            <span aria-hidden="true">★</span>: es donde más se reparten las opiniones.
+          </p>
+        </section>
       )}
     </div>
   );

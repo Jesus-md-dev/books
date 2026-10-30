@@ -22,7 +22,7 @@
     "start": "vite",
     "build": "vite build",
     "postbuild": "node scripts/generateSocialMeta.js",
-    "test": "node --test scripts/*.test.js",
+    "test": "node --test scripts/*.test.js src/utils/*.test.js",
     "preview": "vite preview"
   },
   "devDependencies": {
