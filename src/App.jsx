@@ -7,6 +7,7 @@ import DrawBook from './pages/DrawBook';
 import Home from './pages/Home';
 import Stats from './pages/Stats';
 import Members from './pages/Members';
+import PageMeta from './component/PageMeta';
 import "./App.css";
 import { BooksProvider } from './data/BooksContext';
 
@@ -16,6 +17,7 @@ const App = () => {
    return (
       <BooksProvider>
       <>
+         <PageMeta />
          <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/libros" element={<BookList />} />
