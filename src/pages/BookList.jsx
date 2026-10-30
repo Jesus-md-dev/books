@@ -1,9 +1,11 @@
 
+import { useState } from 'react';
 import Button from '@mui/material/Button';
 import { DataGrid, GridToolbar } from '@mui/x-data-grid';
 import { esES } from '@mui/x-data-grid/locales';
 import NoService  from '../component/noService';
 import { useBooks } from '../data/BooksContext';
+import { loadColumnVisibility, saveColumnVisibility } from '../utils/columnVisibility';
 
 const columns = [
   {
@@ -61,6 +63,19 @@ const columns = [
  */
 const BookList = () => {
   const dataBooks = useBooks();
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState(() =>
+    loadColumnVisibility(columns.map((column) => column.field))
+  );
+
+  /**
+   * Updates the visible columns and remembers the choice in this browser.
+   * @param {Record<string, boolean>} model - New visibility model.
+   */
+  const handleColumnVisibilityChange = (model) => {
+    setColumnVisibilityModel(model);
+    saveColumnVisibility(model);
+  };
+
   if (!dataBooks || dataBooks.length === 0) {
     return <NoService />;
   }
@@ -72,6 +87,8 @@ const BookList = () => {
         rowHeight={150}
         rows={dataBooks}
         columns={columns}
+        columnVisibilityModel={columnVisibilityModel}
+        onColumnVisibilityModelChange={handleColumnVisibilityChange}
         slots={{ toolbar: GridToolbar }}
         slotProps={{
           toolbar: {
