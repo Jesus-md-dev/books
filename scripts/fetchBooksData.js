@@ -20,6 +20,7 @@ const {
   googleBooksQueries,
 } = require('./bookCatalog');
 const { translateBookMetadata } = require('./translateBookMetadata');
+const { improveBook } = require('./covers');
 const { validateSheetData } = require('./sheetValidation');
 const { isFallbackSheet, matchRuletaCandidates, parseRuletaRows } = require('./ruleta');
 
@@ -338,6 +339,7 @@ async function enrichBooks(gridBooks, overrides, catalogRows = [], { forceAll = 
       }
       await new Promise((r) => setTimeout(r, 300));
     }
+    await improveBook(book, { override, placeholder: placeholderCover });
     if (book.imagen === placeholderCover) unresolved.push(book.titulo);
   }
   if (unresolved.length > 0) {

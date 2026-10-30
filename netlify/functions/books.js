@@ -11,6 +11,7 @@ const {
   getCatalogAuthor,
   googleBooksQueries,
 } = require('../../scripts/bookCatalog');
+const { improveBook } = require('../../scripts/covers');
 const bookOverrides = require('../../scripts/bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 const GOOGLE_BOOKS_API_KEY = process.env.GOOGLE_API_KEY;
@@ -200,12 +201,18 @@ async function enrichMissingMetadata(books, catalogRows = []) {
       }));
     }
     const item = await metadataCache.get(cacheKey);
-    if (!item) return;
+    if (!item) {
+      await improveBook(book, { override: bookOverrides[book.titulo], placeholder: placeholderCover });
+      return;
+    }
 
     const volume = item.volumeInfo || {};
     if (book.autor === 'Desconocido' && volume.authors?.length) book.autor = volume.authors.join(', ');
     const verifiedAuthor = !lookupAuthor || authorMatches(lookupAuthor, volume.authors);
-    if (!verifiedAuthor) return;
+    if (!verifiedAuthor) {
+      await improveBook(book, { override: bookOverrides[book.titulo], placeholder: placeholderCover });
+      return;
+    }
 
     const thumbnail = volume.imageLinks?.thumbnail || volume.imageLinks?.smallThumbnail;
     if ((book.imagen === placeholderCover || refreshBook) && thumbnail) {
@@ -221,6 +228,7 @@ async function enrichMissingMetadata(books, catalogRows = []) {
     const override = bookOverrides[book.titulo];
     if (override?.imagen) book.imagen = override.imagen;
     if (override?.descripcion) book.descripcion = override.descripcion;
+    await improveBook(book, { override, placeholder: placeholderCover });
   }));
 
   books.forEach((book) => applyBookOverride(book, bookOverrides[book.titulo]));
@@ -272,6 +280,7 @@ async function buildRuleta() {
     await Promise.all(missing.map(async (entry) => {
       try {
         applyItemToEntry(entry, await searchGoogleBooks(entry.titulo, entry.autor, bookOverrides[entry.titulo]));
+        await improveBook(entry, { override: bookOverrides[entry.titulo], placeholder: placeholderCover });
       } catch (error) {
         console.warn(`[books function] Google Books lookup failed for a Candidatos entry: ${error.message}`);
       }

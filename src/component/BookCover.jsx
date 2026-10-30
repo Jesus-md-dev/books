@@ -13,13 +13,20 @@ const SIZES = {
   lg: { className: 'h-60 w-auto sm:h-72', width: 196, height: 288 },
 };
 
+// Full-size Google covers (zoom=0) weigh ~450 KB: ask Google for a resized copy
+// (fife=wN) so lists stay light; other hosts are used as they are.
+const isGoogleCover = (url) => /^https:\/\/books\.google\.[a-z.]+\/books\/content\?/.test(url || '');
+const resized = (url, width) => `${url}&fife=w${width}`;
+
 const BookCover = ({ book, caption, size = 'md', eager = false, className = '' }) => {
   const s = SIZES[size];
+  const google = isGoogleCover(book.imagen);
   return (
     <Link to={bookPath(book.titulo)} className={`cover-link group ${className}`}>
       <img
         className={`cover-img object-contain ${s.className}`}
-        src={book.imagen}
+        src={google ? resized(book.imagen, s.width * 2) : book.imagen}
+        srcSet={google ? `${resized(book.imagen, s.width * 2)} 2x, ${resized(book.imagen, s.width * 3)} 3x` : undefined}
         alt={`Portada de ${book.titulo}`}
         width={s.width}
         height={s.height}
