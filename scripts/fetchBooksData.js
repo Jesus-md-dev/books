@@ -414,8 +414,7 @@ async function buildComentarios(books, catalogRows) {
     console.warn(`[fetchBooksData] No se pudo leer la hoja "Comentarios" (${error.message}); comentarios.json será {}.`);
     comentarios = {};
   }
-  fs.writeFileSync(COMENTARIOS_PATH, JSON.stringify(comentarios, null, 2) + '
-');
+  fs.writeFileSync(COMENTARIOS_PATH, JSON.stringify(comentarios, null, 2) + '\n');
   console.log(`[fetchBooksData] Escrito ${COMENTARIOS_PATH}`);
 }
 
