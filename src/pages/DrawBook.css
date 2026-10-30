@@ -1,88 +1,57 @@
-.carousel,
-.carousel::after,
-.carousel::before {
-  overflow: hidden;
-}
-
-.scroll-container {
-  height: 24rem;
-  width: 24rem;
+.wheel-wrapper {
   position: relative;
+  /* Fill most of a phone screen; on desktop stay within the viewport height. */
+  width: min(calc(100vw - 1rem), 75vh, 40rem);
+  aspect-ratio: 1 / 1;
 }
 
-.carousel-primary,
-.carousel-secondary {
-  left: 500%;
-  width: 500%;
-  overflow: hidden;
+.wheel {
+  width: 100%;
+  height: 100%;
+}
+
+.wheel-pointer {
   position: absolute;
-  white-space: nowrap;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  width: 0;
+  height: 0;
+  border-left: 16px solid transparent;
+  border-right: 16px solid transparent;
+  border-top: 32px solid #111;
 }
 
-.carousel-primary .carousel-card {
-  width: 20rem;
-  margin-left: 20px;
-}
-
-.carousel-primary {
-  display: flex;
-  justify-content: space-around;
-  animation: scroll-horizontal 2s linear infinite;
-}
-
-.carousel-secondary {
-  animation: scroll-horizontal 2s linear infinite;
-  animation-delay: 1s;
-}
-
-@keyframes scroll-horizontal {
-  0% {
-    left: 500%;
-  }
-
-  100% {
-    left: -500%;
-  }
-}
-
-.hidden-element {
-    display: none !important;
-}
-
-.result {
-  animation-name: result;
-  animation-duration: 2s;
-  height: 18rem;
-  width: 18rem;
+.result-card {
+  width: min(90vw, 18rem);
+  animation: result 1s ease-out;
 }
 
 @keyframes result {
-  0% {
-    width: 0%;
-    height: 0%;
+  from {
+    transform: scale(0);
   }
-  25% {
-    width: 0%;
-    height: 0%;
-  }
-  100% {
-    height: 18rem;
-    width: 18rem;
+  to {
+    transform: scale(1);
   }
 }
 
-.octogram {
-  animation-name: octogram;
-  animation-duration: 1s;
+.eliminated {
+  width: min(calc(100vw - 1rem), 40rem);
 }
 
-@keyframes octogram {
-  0% {
-    width: 0%;
-    height: 0%;
-  }
-  100% {
-    height: 20rem;
-    width: 20rem;
+.eliminated ol {
+  list-style: decimal inside;
+}
+
+.eliminated li {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result-card {
+    animation: none;
   }
 }

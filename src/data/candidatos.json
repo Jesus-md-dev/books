@@ -1,0 +1,100 @@
+[
+  {
+    "id": 0,
+    "titulo": "En la orilla",
+    "autor": "Rafael Chirbes",
+    "imagen": "https://books.google.com/books/content?id=aGrPEFRX2zkC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 280
+  },
+  {
+    "id": 1,
+    "titulo": "El hombre en busca de sentido",
+    "autor": "Viktor Frankl",
+    "imagen": "https://books.google.com/books/content?id=eAOIDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 125
+  },
+  {
+    "id": 2,
+    "titulo": "Salvo mi corazón, todo está bien",
+    "autor": "Héctor Abad Faciolince",
+    "imagen": "https://books.google.com/books/content?id=dGaREAAAQBAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "n_paginas": 0
+  },
+  {
+    "id": 3,
+    "titulo": "Mañana, mañana, mañana",
+    "autor": "Gabrielle Zevin",
+    "imagen": "https://books.google.com/books/content?id=WRmgEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 473
+  },
+  {
+    "id": 4,
+    "titulo": "El rumor y los insectos",
+    "autor": "Ignacio Ferrando",
+    "imagen": "https://books.google.com/books/content?id=ypGsEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 499
+  },
+  {
+    "id": 5,
+    "titulo": "Las intermitencias de la muerte",
+    "autor": "José Saramago",
+    "imagen": "https://books.google.com/books/content?id=KWiBtwZxDgsC&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 178
+  },
+  {
+    "id": 6,
+    "titulo": "La ciudad de las bestias",
+    "autor": "Isabel Allende",
+    "imagen": "https://books.google.com/books/content?id=R-_RtAEACAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api",
+    "n_paginas": 294
+  },
+  {
+    "id": 7,
+    "titulo": "Matar a un ruiseñor",
+    "autor": "Harper Lee",
+    "imagen": "https://books.google.com/books/content?id=dj2KEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 424
+  },
+  {
+    "id": 8,
+    "titulo": "Manual para mujeres de la limpieza",
+    "autor": "Lucía Berlin",
+    "imagen": "https://books.google.com/books/content?id=2PuKCwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 432
+  },
+  {
+    "id": 9,
+    "titulo": "La hija del Khan",
+    "autor": "Marga Bas",
+    "imagen": "https://books.google.com/books/content?id=hmrmEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 594
+  },
+  {
+    "id": 10,
+    "titulo": "Un titular para un crimen",
+    "autor": "María del Carmen Orcero Domínguez",
+    "imagen": "https://books.google.com/books/content?id=IEpcAwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 123
+  },
+  {
+    "id": 11,
+    "titulo": "Mis días en la librería Morisaki",
+    "autor": "Satoshi Yagisawa",
+    "imagen": "https://books.google.com/books/content?id=MsjGEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 121
+  },
+  {
+    "id": 12,
+    "titulo": "Dura una eternidad y en un instante se acaba",
+    "autor": "Anne de Marcken",
+    "imagen": "",
+    "n_paginas": 0
+  },
+  {
+    "id": 13,
+    "titulo": "La liebre y yo",
+    "autor": "Chloe Dalton",
+    "imagen": "https://books.google.com/books/content?id=URbPEQAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "n_paginas": 172
+  }
+]

@@ -1,4 +1,6 @@
 const cachedBooks = require('../../src/data/books.json');
+const cachedCandidatos = require('../../src/data/candidatos.json');
+const { isFallbackSheet, applyItemToEntry, matchRuletaCandidates, parseRuletaRows } = require('../../scripts/ruleta');
 const { fetchSheetRows, getCurrentBook } = require('../../scripts/googleSheets');
 const { SHEET_ID } = require('../../scripts/sheetConfig');
 const { translateBookMetadata } = require('../../scripts/translateBookMetadata');
@@ -252,7 +254,49 @@ async function enrichMissingMetadata(books, catalogRows = []) {
   return books;
 }
 
-exports.handler = async () => {
+// ?tab=candidatos: candidates of the "Candidatos" tab with cover/author/pages.
+async function buildRuleta() {
+  let rows = [];
+  try {
+    rows = await fetchSheetRows(SHEET_ID, 'Candidatos');
+    if (isFallbackSheet(rows, await fetchSheetRows(SHEET_ID, 'Medias'))) rows = [];
+  } catch (error) {
+    console.warn(`[books function] No se pudo leer "Candidatos": ${error.message}`);
+  }
+  const { entries, missing } = matchRuletaCandidates(
+    parseRuletaRows(rows),
+    [...cachedBooks, ...cachedCandidatos],
+    placeholderCover,
+  );
+  if (GOOGLE_BOOKS_API_KEY) {
+    await Promise.all(missing.map(async (entry) => {
+      try {
+        applyItemToEntry(entry, await searchGoogleBooks(entry.titulo, entry.autor, bookOverrides[entry.titulo]));
+      } catch (error) {
+        console.warn(`[books function] Google Books lookup failed for a Candidatos entry: ${error.message}`);
+      }
+    }));
+  }
+  return entries;
+}
+
+exports.handler = async (event) => {
+  if (event?.queryStringParameters?.tab === 'candidatos') {
+    try {
+      return {
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        body: JSON.stringify(await buildRuleta()),
+      };
+    } catch (error) {
+      console.error('[books function] ruleta', error);
+      return {
+        statusCode: 502,
+        headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
+        body: JSON.stringify({ error: error.message }),
+      };
+    }
+  }
   try {
     const readCatalogRows = async () => {
       try {

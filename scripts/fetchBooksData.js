@@ -20,11 +20,13 @@ const {
   googleBooksQueries,
 } = require('./bookCatalog');
 const { translateBookMetadata } = require('./translateBookMetadata');
+const { isFallbackSheet, matchRuletaCandidates, parseRuletaRows } = require('./ruleta');
 
 const API_KEY = process.env.GOOGLE_API_KEY;
 
 const OUT_PATH = path.join(__dirname, '..', 'src', 'data', 'books.json');
-const OVERRIDES_PATH = path.join(__dirname, 'bookOverrides.json');
+const CANDIDATOS_PATH = path.join(__dirname, '..', 'src', 'data', 'candidatos.json');
+const OVERRIDES_PATH =path.join(__dirname, 'bookOverrides.json');
 const placeholderCover = 'https://i.pinimg.com/736x/e0/e9/78/e0e978256054db86ff9690df51d6cd8d.jpg';
 
 function loadOverrides() {
@@ -343,6 +345,47 @@ async function enrichBooks(gridBooks, overrides, catalogRows = [], { forceAll = 
   return gridBooks;
 }
 
+// Candidates of the "Candidatos" tab -> src/data/candidatos.json. Never fails the build.
+async function buildRuleta(knownBooks, overrides, catalogRows, canSearch) {
+  let entries = [];
+  try {
+    console.log('[fetchBooksData] Leyendo hoja "Candidatos"...');
+    let rows = await fetchSheetRows(SHEET_ID, 'Candidatos');
+    if (isFallbackSheet(rows, catalogRows)) {
+      console.warn('[fetchBooksData] La hoja "Candidatos" no existe (Sheets devolvió la primera hoja).');
+      rows = [];
+    }
+    const candidates = parseRuletaRows(rows);
+    if (candidates.length === 0) console.warn('[fetchBooksData] La hoja "Candidatos" está vacía; candidatos.json será [].');
+    let previous = [];
+    try {
+      previous = JSON.parse(fs.readFileSync(CANDIDATOS_PATH, 'utf8'));
+    } catch (_) { /* first run */ }
+    const matched = matchRuletaCandidates(candidates, [...knownBooks, ...previous], placeholderCover);
+    entries = matched.entries;
+    if (matched.missing.length > 0 && canSearch) {
+      const stubs = matched.missing.map((entry) => ({
+        titulo: entry.titulo, autor: entry.autor || 'Desconocido', imagen: placeholderCover,
+        editorial: 'Desconocida', fecha_publicacion: '-', descripcion: '', n_paginas: 0,
+        categorias: [], volumeInfo: [],
+      }));
+      await enrichBooks(stubs, overrides, catalogRows);
+      stubs.forEach((stub, i) => {
+        const entry = matched.missing[i];
+        if (stub.imagen !== placeholderCover) entry.imagen = stub.imagen;
+        if (!entry.autor && stub.autor !== 'Desconocido') entry.autor = stub.autor;
+        entry.n_paginas = stub.n_paginas || entry.n_paginas;
+      });
+    }
+    console.log(`  -> ${entries.length} candidatos en la ruleta`);
+  } catch (error) {
+    console.warn(`[fetchBooksData] No se pudo leer la hoja "Candidatos" (${error.message}); candidatos.json será [].`);
+    entries = [];
+  }
+  fs.writeFileSync(CANDIDATOS_PATH, JSON.stringify(entries, null, 2) + '\n');
+  console.log(`[fetchBooksData] Escrito ${CANDIDATOS_PATH}`);
+}
+
 async function main() {
   const forceFullRefresh = process.env.INCOMING_HOOK_TITLE === 'Forzar regeneración completa';
   console.log('[fetchBooksData] Leyendo hoja "Libros"...');
@@ -454,6 +497,8 @@ async function main() {
   fs.mkdirSync(path.dirname(OUT_PATH), { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(gridBooks, null, 2) + '\n');
   console.log(`[fetchBooksData] Escrito ${OUT_PATH}`);
+
+  await buildRuleta(gridBooks, overrides, catalogRows, isGoogleBooksAvailable);
 }
 
 main().catch((err) => {
