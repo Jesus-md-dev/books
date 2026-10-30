@@ -284,6 +284,7 @@ const BookList = () => {
         ) : (
           <>
             {searchField}
+            <h2 className="sr-only">Filtros</h2>
             <BookFilters filters={filters} counts={counts} options={options} onChange={update} idPrefix="filtros" />
           </>
         )}

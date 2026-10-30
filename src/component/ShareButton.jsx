@@ -58,7 +58,7 @@ export default function ShareButton({ path, title, text = '' }) {
     <>
       <Button
         variant="outlined"
-        color="primary"
+        color="inherit"
         startIcon={<ShareIcon />}
         onClick={handleShare}
         aria-label={`Compartir «${title}»`}

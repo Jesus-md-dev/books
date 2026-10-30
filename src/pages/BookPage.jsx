@@ -85,7 +85,7 @@ const BookPage = () => {
 
     return (
         <article>
-            <div className='content-center-straight flex flex-col items-center'>
+            <div className='content-center-straight flex min-h-[calc(40vh+3rem)] flex-col items-center sm:min-h-[33rem]'>
                 <img
                     className="book-image cover-img object-contain"
                     src={imagen}
