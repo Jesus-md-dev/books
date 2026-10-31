@@ -43,7 +43,17 @@
     "matchTitle": "Atlas de geografía humana",
     "imagen": "https://books.google.com/books/content?id=1KJdAAAAMAAJ&printsec=frontcover&img=1&zoom=1&source=gbs_api"
   },
-  "El hombre caja": { "query": "The Box Man inauthor:Abe", "matchTitle": "The Box Man" },
+  "El hombre caja": {
+    "query": "The Box Man inauthor:Abe",
+    "matchTitle": "The Box Man",
+    "autor": "Kobo Abe",
+    "imagen": "https://books.google.com/books/content?id=86_aDwAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api",
+    "editorial": "Penguin UK",
+    "fecha_publicacion": "2020-10-29",
+    "descripcion": "'A spellbinder from beginning to end, an edgy masterpiece' Chicago Sun Times 'This is the record of a box man'. Anonymous and alone, the box man peeps out of his cut-out eyeholes and watches the world from behind his four cardboard walls. At first repulsed by the strange phenomenon of people who have decided to abandon society and live in boxes on the Tokyo streets, he has found himself drawn into the anonymity and voyeurism of their life. As he becomes obsessed with spying on a young nurse, his identity slips away, in Kobo Abe's eerie, disorienting and seductive masterpiece of unease. 'Funny, sad and destructive ... an invention with its own crazy pull, it gnaws at the reader ... a stunning addition to the literature of eccentricity' The New York Times",
+    "n_paginas": 165,
+    "categorias": ["Fiction"]
+  },
   "La psiquiatra": {
     "query": "La Psiquiatra Wulf Dorn",
     "matchTitle": "La Psiquiatra",

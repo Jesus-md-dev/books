@@ -337,7 +337,10 @@ async function enrichBooks(gridBooks, overrides, catalogRows = [], { forceAll = 
           // the book (substring match); if none does, still take the top result
           // rather than leave the entry with no cover/data at all.
           const related = authorMatchesItems.filter((item) => isTitleRelated(item.volumeInfo.title, matchTitle));
-          updateBookFromItem(book, related.length > 0 ? pickBest(related) : authorMatchesItems[0], refreshMetadata);
+          // A refresh must never replace data that was already right with an unrelated book of the same author.
+          if (related.length > 0 || !refreshMetadata || book.autor === 'Desconocido' || book.imagen === placeholderCover) {
+            updateBookFromItem(book, related.length > 0 ? pickBest(related) : authorMatchesItems[0], refreshMetadata);
+          }
         }
         if (book.autor !== 'Desconocido' && book.imagen !== placeholderCover) break;
       }
