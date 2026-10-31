@@ -57,6 +57,17 @@
   .card {
     @apply rounded-xl border border-line bg-surface p-5 shadow-sm;
   }
+  /* Instagram embeds: the iframe sets its own inline border and 3px radius, so override it and let the wrapper clip the corners. */
+  .instagram-card {
+    @apply overflow-hidden rounded-2xl border border-line bg-surface shadow-sm;
+  }
+  .instagram-card .instagram-media {
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
   .text-muted-sm {
     @apply text-sm text-muted;
   }

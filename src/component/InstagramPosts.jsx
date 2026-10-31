@@ -55,12 +55,12 @@ const InstagramPosts = () => {
       <h2 id="instagram" className="section-title">Síguenos en Instagram</h2>
       <ul className="mx-auto flex max-w-5xl flex-wrap justify-center gap-6">
         {urls.map((url) => (
-          <li key={url} className="w-full max-w-sm">
+          <li key={url} className="instagram-card w-full max-w-sm">
             <blockquote
               className="instagram-media"
               data-instgrm-permalink={url}
               data-instgrm-version="14"
-              style={{ margin: 0, width: '100%', minWidth: 0 }}
+              style={{ width: '100%', minWidth: 0 }}
             >
               <a href={url} className="text-link">Ver publicación en Instagram</a>
             </blockquote>
