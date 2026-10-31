@@ -36,18 +36,24 @@ const RateBook = ({ book }) => {
     const id = useId();
     const { titulo, votos = [] } = book;
     const [members, setMembers] = useState([]);
+    // false when the function answers with an error (not configured yet, Google down): shows the maintenance notice.
+    const [available, setAvailable] = useState(true);
     const [member, setMember] = useState(readSavedMember);
     const [rating, setRating] = useState('');
     const [sending, setSending] = useState(false);
     const [status, setStatus] = useState({ type: '', text: '' });
 
     // Members come from the sheet; the names that already voted are the fallback.
+    // A failing endpoint means voting is not working right now.
     useEffect(() => {
         let active = true;
         fetch(ENDPOINT, { cache: 'no-store' })
             .then((response) => (response.ok ? response.json() : Promise.reject(new Error(`HTTP ${response.status}`))))
             .then((data) => { if (active && Array.isArray(data.socios)) setMembers(data.socios); })
-            .catch((error) => console.warn('[vote] No se pudo cargar la lista de socios:', error));
+            .catch((error) => {
+                console.warn('[vote] No se pudo cargar la lista de socios:', error);
+                if (active) setAvailable(false);
+            });
         return () => { active = false; };
     }, []);
 
@@ -73,6 +79,7 @@ const RateBook = ({ book }) => {
                 body: JSON.stringify({ titulo, socio: selected, voto, web: honeypot }),
             });
             const result = await response.json().catch(() => ({}));
+            if (response.status >= 502) setAvailable(false);
             if (!response.ok) throw new Error(result.error || `Error ${response.status}`);
             saveMember(selected);
             applyVote(titulo, selected, result.voto);
@@ -92,6 +99,17 @@ const RateBook = ({ book }) => {
         if (!selected || rating === '') return;
         send(Number(rating), event.currentTarget.elements.web?.value);
     };
+
+    if (!available) {
+        return (
+            <section className="mt-10 w-full max-w-md" aria-labelledby={`${id}-title`}>
+                <h2 id={`${id}-title`} className="section-title">Puntúa este libro</h2>
+                <p className="card text-left text-muted" role="status">
+                    Estamos en mantenimiento: ahora mismo no se puede puntuar desde la web. Vuelve a intentarlo más tarde.
+                </p>
+            </section>
+        );
+    }
 
     return (
         <section className="mt-10 w-full max-w-md" aria-labelledby={`${id}-title`}>
