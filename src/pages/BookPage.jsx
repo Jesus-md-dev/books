@@ -59,7 +59,8 @@ const BookPage = () => {
         editorial = '-',
         n_paginas = '-',
         media,
-        votos = []
+        votos = [],
+        preguntas = []
     } = book || {};
 
     // Build-time comments from the "Comentarios" tab, keyed by the book title.
@@ -151,6 +152,16 @@ const BookPage = () => {
                                 </li>
                             ))}
                         </ul>
+                    </section>
+                )}
+                {Array.isArray(preguntas) && preguntas.length > 0 && (
+                    <section className="mt-10 w-full max-w-3xl" aria-labelledby="preguntas-title">
+                        <h2 id="preguntas-title" className="section-title">Preguntas para la reunión</h2>
+                        <ol className="mt-4 flex list-decimal flex-col gap-3 rounded-lg border border-line bg-surface py-3 pl-10 pr-4 text-left">
+                            {preguntas.map((pregunta, index) => (
+                                <li key={index} className="break-words pl-1">{pregunta}</li>
+                            ))}
+                        </ol>
                     </section>
                 )}
                 {comentarios.length > 0 && (

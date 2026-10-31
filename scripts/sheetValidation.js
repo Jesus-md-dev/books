@@ -4,6 +4,7 @@
  * Row numbers are sheet rows (the header is row 1).
  */
 const { normalizeHeader, normalizeTitle } = require('./bookCatalog');
+const { parseMeetingDate } = require('./currentBookInfo');
 
 const MIN_RATING = 0;
 const MAX_RATING = 5;
@@ -96,6 +97,16 @@ function validateCatalogRows(rows = []) {
   return { rows: cleaned, warnings };
 }
 
+// "Actual": the optional meeting columns. Absent or empty ones never warn.
+function validateCurrentBookInfo(info = {}) {
+  const warnings = [];
+  const date = info.fecha_reunion === undefined ? undefined : parseMeetingDate(info.fecha_reunion);
+  if (date && !date.recognized) {
+    warnings.push(`Actual: la fecha de reunión "${date.value}" no tiene un formato reconocible (usa dd/mm/aaaa, con hora opcional hh:mm); se mostrará tal cual.`);
+  }
+  return { warnings };
+}
+
 function validateSheetData({ librosRows = [], catalogRows = [] } = {}) {
   const libros = validateLibrosRows(librosRows);
   const catalog = validateCatalogRows(catalogRows);
@@ -111,6 +122,7 @@ module.exports = {
   MIN_RATING,
   cleanSpaces,
   validateCatalogRows,
+  validateCurrentBookInfo,
   validateLibrosRows,
   validateSheetData,
 };

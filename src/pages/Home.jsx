@@ -3,6 +3,7 @@ import NoService from '../component/noService';
 import BookCover from '../component/BookCover';
 import { useBooks } from '../data/BooksContext';
 import { bookPath } from '../utils/bookPath';
+import { formatMeetingDate } from '../utils/meeting';
 import topRoto from '../assets/top.webp';
 import bottomRoto from '../assets/bottom.webp';
 
@@ -56,7 +57,26 @@ const Home = () => {
               {hasAuthor(actual) && <p className="text-muted">{actual['autor']}</p>}
               <Link to={bookPath(actual['titulo'])} className="text-link mt-3">Ver ficha del libro</Link>
             </div>
-            <div className="flex w-full flex-col items-center justify-center md:w-1/2">
+            <div className="flex w-full flex-col items-center justify-center gap-4 md:w-1/2">
+              {(actual['fecha_reunion'] || actual['lugar_reunion']) && (
+                <div className="w-full max-w-sm rounded-lg border border-line bg-surface px-4 py-3 text-center">
+                  <h3 className="font-display text-lg font-bold">Próxima reunión</h3>
+                  <dl className="mt-1 break-words">
+                    {actual['fecha_reunion'] && (
+                      <>
+                        <dt className="sr-only">Fecha</dt>
+                        <dd>{formatMeetingDate(actual['fecha_reunion'])}</dd>
+                      </>
+                    )}
+                    {actual['lugar_reunion'] && (
+                      <>
+                        <dt className="sr-only">Lugar</dt>
+                        <dd className="text-muted">{actual['lugar_reunion']}</dd>
+                      </>
+                    )}
+                  </dl>
+                </div>
+              )}
               {actual['direccion'] !== undefined ?
                 <iframe
                   title={`Mapa: ${actual['direccion']}`}

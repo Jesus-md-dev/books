@@ -1,3 +1,5 @@
+const { readCurrentBookInfo } = require('./currentBookInfo');
+
 const API_KEY = process.env.GOOGLE_SHEETS_API_KEY;
 
 async function fetchWithSheetsApi(sheetId, tabName) {
@@ -98,6 +100,7 @@ function getCurrentBook(rows = []) {
     return {
       titulo: title,
       autor: authorEntry ? String(authorEntry[1] || '').trim() : '',
+      ...readCurrentBookInfo(row),
     };
   }
   return undefined;

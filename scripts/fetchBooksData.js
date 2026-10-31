@@ -21,7 +21,8 @@ const {
 } = require('./bookCatalog');
 const { translateBookMetadata } = require('./translateBookMetadata');
 const { improveBook } = require('./covers');
-const { validateSheetData } = require('./sheetValidation');
+const { validateCurrentBookInfo, validateSheetData } = require('./sheetValidation');
+const { applyCurrentBookInfo } = require('./currentBookInfo');
 const { groupComments, parseCommentRows } = require('./comments');
 const { isFallbackSheet, matchRuletaCandidates, parseRuletaRows } = require('./ruleta');
 
@@ -54,7 +55,7 @@ function resetBookFields(book) {
   book.volumeInfo = [];
 }
 
-function computeBooks(librosRows, actualTitle, catalogRows = [], actualAuthor = '') {
+function computeBooks(librosRows, actualTitle, catalogRows = [], actualAuthor = '', currentInfo = {}) {
   const books = {};
   const catalog = createCatalogMap(catalogRows);
 
@@ -134,6 +135,7 @@ function computeBooks(librosRows, actualTitle, catalogRows = [], actualAuthor = 
     if (actualAuthor && String(titulo).trim() === String(actualTitle).trim()) {
       book.autor = actualAuthor;
     }
+    applyCurrentBookInfo(book, currentInfo, String(titulo).trim() === String(actualTitle).trim());
     book.id = id++;
     gridBooks.push(book);
   });
@@ -440,12 +442,13 @@ async function main() {
   }
 
   const validated = validateSheetData({ librosRows, catalogRows });
+  validated.warnings.push(...validateCurrentBookInfo(actualBook).warnings);
   validated.warnings.forEach((warning) => console.warn(`[fetchBooksData] ⚠ ${warning}`));
   if (validated.warnings.length > 0) {
     console.warn(`[fetchBooksData] ⚠ ${validated.warnings.length} aviso(s) en los datos de la hoja; revísalos en Google Sheets.`);
   }
 
-  let gridBooks = computeBooks(validated.librosRows, actualTitle, validated.catalogRows, actualBook.autor);
+  let gridBooks = computeBooks(validated.librosRows, actualTitle, validated.catalogRows, actualBook.autor, actualBook);
   console.log(`[fetchBooksData] Calculados ${gridBooks.length} libros.`);
 
   const overrides = loadOverrides();

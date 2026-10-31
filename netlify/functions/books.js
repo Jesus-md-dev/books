@@ -2,6 +2,7 @@ const cachedBooks = require('../../src/data/books.json');
 const cachedCandidatos = require('../../src/data/candidatos.json');
 const { isFallbackSheet, applyItemToEntry, matchRuletaCandidates, parseRuletaRows } = require('../../scripts/ruleta');
 const { fetchSheetRows, getCurrentBook } = require('../../scripts/googleSheets');
+const { applyCurrentBookInfo } = require('../../scripts/currentBookInfo');
 const { SHEET_ID } = require('../../scripts/sheetConfig');
 const { translateBookMetadata } = require('../../scripts/translateBookMetadata');
 const {
@@ -43,7 +44,7 @@ function applyBookOverride(book, override) {
   };
 }
 
-function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor = '') {
+function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor = '', currentInfo = {}) {
   const byTitle = new Map();
   const catalog = createCatalogMap(catalogRows);
   for (const row of voteRows) {
@@ -83,7 +84,7 @@ function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor 
     const votes = byTitle.get(matchingVoteTitle) || { votos: [], sum: 0 };
     const saved = cachedBooks.find((book) => String(book.titulo).trim() === String(title).trim()) || {};
     const count = votes.votos.length;
-    return {
+    return applyCurrentBookInfo({
       ...saved,
       id,
       titulo: title,
@@ -102,7 +103,7 @@ function calculateBooks(voteRows, currentTitle, catalogRows = [], currentAuthor 
       sum_votos: votes.sum,
       media: count ? (votes.sum / count).toFixed(2) : 0,
       votos: votes.votos,
-    };
+    }, currentInfo, String(title).trim() === String(currentTitle).trim());
   });
 }
 
@@ -324,7 +325,7 @@ exports.handler = async (event) => {
     const currentTitle = currentBook?.titulo;
     if (!currentTitle) throw new Error('No se encontró el libro actual');
     const latest = await enrichMissingMetadata(
-      calculateBooks(voteRows, currentTitle, catalogRows, currentBook.autor),
+      calculateBooks(voteRows, currentTitle, catalogRows, currentBook.autor, currentBook),
       catalogRows,
     );
     return {

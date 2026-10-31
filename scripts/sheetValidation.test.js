@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { validateCatalogRows, validateLibrosRows, validateSheetData } = require('./sheetValidation');
+const { validateCatalogRows, validateCurrentBookInfo, validateLibrosRows, validateSheetData } = require('./sheetValidation');
 
 function withHeaders(rows, headers) {
   Object.defineProperty(rows, 'sheetHeaders', { value: headers, enumerable: false });
@@ -61,4 +61,12 @@ test('clean data produces no warnings and tolerates empty input', () => {
 
   assert.deepEqual(validateSheetData({ librosRows, catalogRows }).warnings, []);
   assert.deepEqual(validateSheetData().warnings, []);
+});
+
+test('warns only about an unrecognizable meeting date, never about absent columns', () => {
+  assert.deepEqual(validateCurrentBookInfo({ titulo: 'X', autor: 'Y' }).warnings, []);
+  assert.deepEqual(validateCurrentBookInfo({ fecha_reunion: '2026-11-14T18:30', lugar_reunion: 'Café' }).warnings, []);
+  const { warnings } = validateCurrentBookInfo({ fecha_reunion: 'pronto' });
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /"pronto" no tiene un formato reconocible/);
 });
