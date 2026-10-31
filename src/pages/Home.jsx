@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import NoService from '../component/noService';
 import BookCover from '../component/BookCover';
+import InstagramPosts from '../component/InstagramPosts';
 import { useBooks } from '../data/BooksContext';
 import { bookPath } from '../utils/bookPath';
 import { formatMeetingDate } from '../utils/meeting';
@@ -109,6 +110,8 @@ const Home = () => {
             ))}
           </ul>
         </section>
+
+        <InstagramPosts />
       </div>
     </div>
   );
