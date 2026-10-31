@@ -13,6 +13,7 @@ const LINKS = [
   { to: '/libros', label: 'Lista de libros' },
   { to: '/estadisticas', label: 'Estadísticas' },
   { to: '/linea-temporal', label: 'Línea temporal' },
+  { to: '/sorteo', label: 'Ruleta' },
   { to: '/socios', label: 'Socios' },
 ];
 

@@ -14,8 +14,10 @@ const SIZES = {
 };
 
 // Full-size Google covers (zoom=0) weigh ~450 KB: ask Google for a resized copy
-// (fife=wN) so lists stay light; other hosts are used as they are.
-const isGoogleCover = (url) => /^https:\/\/books\.google\.[a-z.]+\/books\/content\?/.test(url || '');
+// (fife=wN) so lists stay light; other hosts are used as they are. A URL carrying `nofife`
+// is used as it is: for some scanned volumes fife returns a different page than the cover.
+const isGoogleCover = (url) => /^https:\/\/books\.google\.[a-z.]+\/books\/content\?/.test(url || '')
+  && !/[?&]nofife/.test(url);
 const resized = (url, width) => `${url}&fife=w${width}`;
 
 const BookCover = ({ book, caption, size = 'md', eager = false, className = '' }) => {
