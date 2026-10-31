@@ -1,7 +1,7 @@
-const POST_URL = /^https:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/[\w-]+\/?(\?.*)?$/;
+const POST_URL = /^https:\/\/(www\.)?instagram\.com\/([\w.]+\/)?(p|reel|tv)\/([\w-]+)\/?(\?.*)?$/;
 
 /**
- * Keeps only valid Instagram post URLs, normalized to the canonical form with a trailing slash.
+ * Keeps only valid Instagram post URLs, normalized to /<p|reel|tv>/<code>/ (a profile prefix such as /bahia.lectora/ is dropped).
  * @param {unknown} list Raw list from the data file.
  * @returns {string[]}
  */
@@ -10,10 +10,9 @@ export function validPostUrls(list) {
   const seen = new Set();
   for (const item of list) {
     if (typeof item !== 'string') continue;
-    const url = item.trim();
-    if (!POST_URL.test(url)) continue;
-    const { pathname } = new URL(url);
-    seen.add(`https://www.instagram.com${pathname.endsWith('/') ? pathname : `${pathname}/`}`);
+    const match = item.trim().match(POST_URL);
+    if (!match) continue;
+    seen.add(`https://www.instagram.com/${match[3]}/${match[4]}/`);
   }
   return [...seen];
 }

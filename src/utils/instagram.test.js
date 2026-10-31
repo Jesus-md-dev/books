@@ -13,6 +13,13 @@ test('normalizes post, reel and tv urls and drops duplicates', () => {
   );
 });
 
+test('drops the profile prefix of a post url', () => {
+  assert.deepEqual(
+    validPostUrls(['https://www.instagram.com/bahia.lectora/p/C7WTuZoI864/']),
+    ['https://www.instagram.com/p/C7WTuZoI864/'],
+  );
+});
+
 test('rejects other hosts, profiles, non-strings and non-arrays', () => {
   assert.deepEqual(
     validPostUrls([
