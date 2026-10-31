@@ -49,3 +49,9 @@ test('every static route in the sitemap except / has its own title and descripti
     assert.ok(STATIC_PAGES[route] && STATIC_PAGES[route].title && STATIC_PAGES[route].description, route);
   }
 });
+
+test('sitemap lists static routes with the final trailing slash', () => {
+  const xml = buildSitemap([], null);
+  assert.match(xml, /<loc>https:\/\/bahia-lectora\.jzmarquez\.com\/libros\/<\/loc>/);
+  assert.match(xml, /<loc>https:\/\/bahia-lectora\.jzmarquez\.com\/<\/loc>/);
+});

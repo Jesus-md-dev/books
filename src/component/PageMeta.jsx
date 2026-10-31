@@ -39,7 +39,7 @@ export default function PageMeta() {
   useEffect(() => {
     const clean = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
     let page = PAGES[clean];
-    let canonicalPath = page ? clean : '/';
+    let canonicalPath = page && clean !== '/' ? `${clean}/` : '/'; // final URL: Netlify serves the prerendered folders with a trailing slash
     if (!page && clean.startsWith('/libro/')) {
       const id = safeDecode(clean.slice('/libro/'.length));
       const book = (books || []).find((b) => norm(b.titulo) === norm(id));

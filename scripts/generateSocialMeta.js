@@ -63,7 +63,7 @@ function main() {
     const block = seo.buildHeadBlock({
       title: page.title,
       description: page.description,
-      url: seo.SITE_URL + route,
+      url: seo.SITE_URL + seo.staticPath(route),
       image: `${seo.SITE_URL}/logo.webp`,
       type: 'website',
       jsonLd: null,

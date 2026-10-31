@@ -30,6 +30,11 @@ function cleanTitle(book) {
 }
 
 /** Final URL path of a book page: Netlify 301s any other form to lowercase + trailing slash. */
+/** Final URL path of a static route: Netlify 301s /libros to /libros/ because the prerendered page is a folder index. */
+function staticPath(route) {
+  return route === '/' ? '/' : `${route}/`;
+}
+
 function bookPath(book) {
   return `/libro/${encodeURIComponent(cleanTitle(book).toLowerCase())}/`;
 }
@@ -95,7 +100,7 @@ function buildHeadBlock({ title, description, url, image, type, jsonLd }) {
 }
 
 function buildSitemap(books, lastmod) {
-  const paths = [...STATIC_ROUTES, ...books.map(bookPath)];
+  const paths = [...STATIC_ROUTES.map(staticPath), ...books.map(bookPath)];
   const seen = new Set();
   const urls = paths.filter((p) => !seen.has(p) && seen.add(p));
   const body = urls
@@ -106,6 +111,6 @@ function buildSitemap(books, lastmod) {
 
 module.exports = {
   SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION, STATIC_ROUTES, STATIC_PAGES,
-  escapeHtml, cleanTitle, bookPath, bookDescription, getIsbn,
+  escapeHtml, cleanTitle, staticPath, bookPath, bookDescription, getIsbn,
   buildBookJsonLd, buildHeadBlock, buildSitemap,
 };
