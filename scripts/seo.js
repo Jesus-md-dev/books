@@ -5,6 +5,14 @@ const DEFAULT_DESCRIPTION = 'Bahía Lectora - club de lectura';
 // Public routes of src/App.jsx. /sorteo is a utility page (noindex on the client), so it is left out.
 const STATIC_ROUTES = ['/', '/libros', '/estadisticas', '/linea-temporal', '/socios'];
 
+// Title and description of the static routes (kept in step with PAGES in src/component/PageMeta.jsx).
+const STATIC_PAGES = {
+  '/libros': { title: `Libros · ${SITE_NAME}`, description: 'Todos los libros leídos por el club de lectura Bahía Lectora, con sus valoraciones.' },
+  '/estadisticas': { title: `Estadísticas · ${SITE_NAME}`, description: 'Estadísticas del club de lectura Bahía Lectora: libros mejor y peor valorados y más.' },
+  '/linea-temporal': { title: `Línea temporal · ${SITE_NAME}`, description: 'Todas las lecturas del club de lectura Bahía Lectora en orden, con sus hitos: libros, páginas y mejor valorado.' },
+  '/socios': { title: `Socios · ${SITE_NAME}`, description: 'Las socias y socios del club de lectura Bahía Lectora y sus libros favoritos.' },
+};
+
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')
@@ -97,7 +105,7 @@ function buildSitemap(books, lastmod) {
 }
 
 module.exports = {
-  SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION, STATIC_ROUTES,
+  SITE_URL, SITE_NAME, DEFAULT_DESCRIPTION, STATIC_ROUTES, STATIC_PAGES,
   escapeHtml, cleanTitle, bookPath, bookDescription, getIsbn,
   buildBookJsonLd, buildHeadBlock, buildSitemap,
 };

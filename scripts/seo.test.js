@@ -42,3 +42,10 @@ test('sitemap lists static and book routes once, never /admin', () => {
 test('description falls back when the book has none', () => {
   assert.match(bookDescription({ titulo: 'X', autor: 'Y' }), /X de Y/);
 });
+
+test('every static route in the sitemap except / has its own title and description', () => {
+  const { STATIC_ROUTES, STATIC_PAGES } = require('./seo');
+  for (const route of STATIC_ROUTES.filter((r) => r !== '/')) {
+    assert.ok(STATIC_PAGES[route] && STATIC_PAGES[route].title && STATIC_PAGES[route].description, route);
+  }
+});

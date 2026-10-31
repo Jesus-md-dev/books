@@ -59,6 +59,22 @@ function main() {
     written += 1;
   }
 
+  for (const [route, page] of Object.entries(seo.STATIC_PAGES)) {
+    const block = seo.buildHeadBlock({
+      title: page.title,
+      description: page.description,
+      url: seo.SITE_URL + route,
+      image: `${seo.SITE_URL}/logo.webp`,
+      type: 'website',
+      jsonLd: null,
+    });
+    const html = baseHtml.replace(BLOCK_RE, () => block)
+      .replace(/<title>[^<]*<\/title>/, () => `<title>${seo.escapeHtml(page.title)}</title>`);
+    const dir = path.join(BUILD_DIR, route.slice(1));
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), html);
+  }
+
   fs.writeFileSync(path.join(BUILD_DIR, 'sitemap.xml'), seo.buildSitemap(books, new Date().toISOString().slice(0, 10)));
   console.log(`[generateSocialMeta] Generadas ${written} páginas con meta tags por libro.`);
 }
