@@ -79,8 +79,10 @@ const BookPage = () => {
         voto.hue = Math.abs(value) % 360 + 'deg';
     });
 
-    // Only read books can be rated: the last one is the current book, and candidates have not been read.
-    const isCurrent = dataBooks[dataBooks.length - 1] === book;
+    // Only read books can be rated: the current book is flagged `actual` (the last one in older data
+    // without the flag), and candidates have not been read.
+    const hasActualFlag = dataBooks.some((item) => item.actual === true);
+    const isCurrent = hasActualFlag ? book?.actual === true : dataBooks[dataBooks.length - 1] === book;
     const isCandidate = candidatos.some((candidate) => normalizeBookTitle(candidate.titulo) === normalizeBookTitle(titulo));
     const canRate = !isCurrent && !isCandidate;
 

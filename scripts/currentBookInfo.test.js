@@ -38,7 +38,13 @@ test('reads the optional columns by normalized header, nothing when absent', () 
 
 test('applies the extras only to the current book and clears stale ones', () => {
   const stale = { titulo: 'X', lugar_reunion: 'viejo', preguntas: ['p'] };
-  assert.deepEqual(applyCurrentBookInfo({ ...stale }, {}, true), { titulo: 'X' });
-  assert.deepEqual(applyCurrentBookInfo({ ...stale }, { lugar_reunion: 'nuevo' }, true), { titulo: 'X', lugar_reunion: 'nuevo' });
+  assert.deepEqual(applyCurrentBookInfo({ ...stale }, {}, true), { titulo: 'X', actual: true });
+  assert.deepEqual(applyCurrentBookInfo({ ...stale }, { lugar_reunion: 'nuevo' }, true), { titulo: 'X', actual: true, lugar_reunion: 'nuevo' });
   assert.deepEqual(applyCurrentBookInfo({ ...stale }, { lugar_reunion: 'nuevo' }, false), { titulo: 'X' });
+});
+
+test('flags only the current book and drops a stale flag from a cached copy', () => {
+  assert.equal(applyCurrentBookInfo({ titulo: 'X' }, {}, true).actual, true);
+  assert.equal('actual' in applyCurrentBookInfo({ titulo: 'X', actual: true }, {}, false), false);
+  assert.equal('actual' in applyCurrentBookInfo({ titulo: 'X' }, {}, false), false);
 });

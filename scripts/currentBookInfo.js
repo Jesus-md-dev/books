@@ -82,10 +82,17 @@ function readCurrentBookInfo(row = {}) {
 
 const INFO_FIELDS = ['fecha_reunion', 'lugar_reunion', 'preguntas'];
 
-/** Sets the extras on the current book and clears stale ones left by a cached copy. */
+/**
+ * Sets the extras and the `actual: true` flag on the current book and clears stale ones left by a
+ * cached copy (a previous current book may still carry them).
+ */
 function applyCurrentBookInfo(book, info = {}, isCurrent = true) {
   INFO_FIELDS.forEach((field) => { delete book[field]; });
-  if (isCurrent) INFO_FIELDS.forEach((field) => { if (info[field] !== undefined) book[field] = info[field]; });
+  delete book.actual;
+  if (isCurrent) {
+    book.actual = true;
+    INFO_FIELDS.forEach((field) => { if (info[field] !== undefined) book[field] = info[field]; });
+  }
   return book;
 }
 
