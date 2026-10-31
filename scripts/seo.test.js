@@ -8,8 +8,9 @@ const book = {
   volumeInfo: { industryIdentifiers: [{ type: 'ISBN_13', identifier: '123' }] },
 };
 
-test('bookPath trims, collapses spaces and encodes accents', () => {
-  assert.equal(bookPath(book), '/libro/G%C3%B3tico');
+test('bookPath is the final URL: trimmed, lowercase, encoded, trailing slash', () => {
+  assert.equal(bookPath(book), '/libro/g%C3%B3tico/');
+  assert.equal(bookPath({ titulo: 'La Maldición  de Hill House' }), '/libro/la%20maldici%C3%B3n%20de%20hill%20house/');
 });
 
 test('JSON-LD has isbn and pages, no aggregateRating, null without author', () => {
@@ -18,6 +19,10 @@ test('JSON-LD has isbn and pages, no aggregateRating, null without author', () =
   assert.equal(ld.numberOfPages, 300);
   assert.equal(ld.aggregateRating, undefined);
   assert.equal(buildBookJsonLd({ titulo: 'A', autor: 'Desconocido' }), null);
+});
+
+test('JSON-LD url matches bookPath', () => {
+  assert.equal(buildBookJsonLd(book).url, 'https://bahia-lectora.jzmarquez.com/libro/g%C3%B3tico/');
 });
 
 test('head block cannot be broken out of by the description', () => {
@@ -30,7 +35,7 @@ test('head block cannot be broken out of by the description', () => {
 test('sitemap lists static and book routes once, never /admin', () => {
   const xml = buildSitemap([book, book]);
   assert.equal((xml.match(/<loc>/g) || []).length, 6);
-  assert.ok(xml.includes('/libro/G%C3%B3tico'));
+  assert.ok(xml.includes('<loc>https://bahia-lectora.jzmarquez.com/libro/g%C3%B3tico/</loc>'));
   assert.ok(!xml.includes('admin'));
 });
 

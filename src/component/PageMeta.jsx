@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useBooks } from '../data/BooksContext';
+import { bookPath } from '../utils/bookPath';
 
 export const SITE_URL = 'https://bahia-lectora.jzmarquez.com';
 const SITE = 'Bahía Lectora';
@@ -51,7 +52,7 @@ export default function PageMeta() {
             ? (text.length > 160 ? `${text.slice(0, 157).trimEnd()}...` : text)
             : `${t}: ficha y valoraciones del club de lectura ${SITE}.`,
         };
-        canonicalPath = `/libro/${encodeURIComponent(t)}`;
+        canonicalPath = bookPath(t);
       }
     }
     page = page || PAGES['/'];

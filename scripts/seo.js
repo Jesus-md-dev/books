@@ -21,8 +21,9 @@ function cleanTitle(book) {
   return String(book.titulo || '').trim().replace(/\s+/g, ' ');
 }
 
+/** Final URL path of a book page: Netlify 301s any other form to lowercase + trailing slash. */
 function bookPath(book) {
-  return `/libro/${encodeURIComponent(cleanTitle(book))}`;
+  return `/libro/${encodeURIComponent(cleanTitle(book).toLowerCase())}/`;
 }
 
 function bookDescription(book) {
