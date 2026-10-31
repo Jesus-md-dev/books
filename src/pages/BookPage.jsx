@@ -7,6 +7,7 @@ import RateBook from '../component/RateBook';
 import comentariosData from '../data/comentarios.json';
 import ShareButton from '../component/ShareButton';
 import { bookPath } from '../utils/bookPath';
+import { resizedCover } from '../utils/coverUrl';
 import './BookPage.css';
 import NoService from '../component/noService';
 import topRoto from '../assets/top.webp';
@@ -98,7 +99,7 @@ const BookPage = () => {
             <div className='content-center-straight flex min-h-[calc(40vh+3rem)] flex-col items-center sm:min-h-[33rem]'>
                 <img
                     className="book-image cover-img object-contain"
-                    src={imagen}
+                    src={resizedCover(imagen, 900)}
                     alt={`Portada de ${titulo}`}
                     loading="eager"
                 />
