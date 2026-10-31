@@ -4,9 +4,15 @@ import { useBooksActions } from '../data/BooksContext';
 const MEMBER_KEY = 'bahia-lectora:socio';
 const ENDPOINT = '/.netlify/functions/vote';
 
-// -5 to 5 in steps of 0.25, best first.
-const OPTIONS = Array.from({ length: 41 }, (_, index) => 5 - index * 0.25);
 const formatVote = (value) => String(value).replace('.', ',');
+
+/** Reads what was typed ("4,5", "4.25", "-2"): a number from -5 to 5 in steps of 0.25, or null. */
+function parseRating(text) {
+    const clean = String(text).trim().replace(',', '.');
+    if (!/^-?\d+(\.\d+)?$/.test(clean)) return null;
+    const value = Number(clean);
+    return value >= -5 && value <= 5 && Number.isInteger(value * 4) ? value : null;
+}
 
 function readSavedMember() {
     try {
@@ -64,10 +70,13 @@ const RateBook = ({ book }) => {
 
     // Pre-select the member's current vote when the member or the book changes.
     useEffect(() => {
-        setRating(currentValue === null || Number.isNaN(currentValue) ? '' : String(currentValue));
+        setRating(currentValue === null || Number.isNaN(currentValue) ? '' : formatVote(currentValue));
     }, [selected, titulo, currentValue]);
 
     useEffect(() => { setStatus({ type: '', text: '' }); }, [selected, titulo]);
+
+    const ratingValue = parseRating(rating);
+    const ratingInvalid = rating.trim() !== '' && ratingValue === null;
 
     const send = async (voto, honeypot = '') => {
         setSending(true);
@@ -96,8 +105,8 @@ const RateBook = ({ book }) => {
 
     const handleSubmit = (event) => {
         event.preventDefault();
-        if (!selected || rating === '') return;
-        send(Number(rating), event.currentTarget.elements.web?.value);
+        if (!selected || ratingValue === null) return;
+        send(ratingValue, event.currentTarget.elements.web?.value);
     };
 
     if (!available) {
@@ -132,22 +141,30 @@ const RateBook = ({ book }) => {
                 </label>
                 <label className="flex flex-col gap-1 font-semibold" htmlFor={`${id}-nota`}>
                     Nota (de -5 a 5)
-                    <select
+                    <input
                         id={`${id}-nota`}
+                        type="text"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        placeholder="Por ejemplo 4,5"
                         className="rounded-md border border-line bg-surface px-3 py-2 font-normal"
                         value={rating}
                         onChange={(event) => setRating(event.target.value)}
                         disabled={sending || !selected}
-                    >
-                        <option value="">Elige una nota</option>
-                        {OPTIONS.map((value) => <option key={value} value={String(value)}>{formatVote(value)}</option>)}
-                    </select>
+                        aria-invalid={ratingInvalid}
+                        aria-describedby={ratingInvalid ? `${id}-nota-error` : undefined}
+                    />
+                    {ratingInvalid && (
+                        <span id={`${id}-nota-error`} className="text-sm font-semibold text-danger">
+                            Escribe un número de -5 a 5 en pasos de 0,25 (por ejemplo 4,5 o 3,75).
+                        </span>
+                    )}
                 </label>
                 <div className="flex flex-wrap items-center gap-3">
                     <button
                         type="submit"
                         className="rounded-md bg-primary px-4 py-2 font-bold text-on-primary disabled:opacity-60"
-                        disabled={sending || !selected || rating === ''}
+                        disabled={sending || !selected || ratingValue === null}
                     >
                         {currentVote ? 'Cambiar mi voto' : 'Enviar mi voto'}
                     </button>
