@@ -5,6 +5,7 @@ import { Route, Routes, Navigate } from 'react-router-dom';
 import Home from './pages/Home';
 import Loading from './component/loading';
 import PageMeta from './component/PageMeta';
+import ScrollToTop from './component/ScrollToTop';
 import "./App.css";
 import { BooksProvider } from './data/BooksContext';
 
@@ -23,6 +24,7 @@ const App = () => {
       <BooksProvider>
       <>
          <PageMeta />
+         <ScrollToTop />
          <Suspense fallback={<Loading />}>
          <Routes>
             <Route path="/" element={<Home />} />
