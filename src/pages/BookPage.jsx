@@ -2,6 +2,8 @@
 import { Link, useParams } from 'react-router-dom';
 import Stars from '../component/stars';
 import { useBooks } from '../data/BooksContext';
+import candidatos from '../data/candidatos.json';
+import RateBook from '../component/RateBook';
 import comentariosData from '../data/comentarios.json';
 import ShareButton from '../component/ShareButton';
 import { bookPath } from '../utils/bookPath';
@@ -76,6 +78,11 @@ const BookPage = () => {
         sumSub = !sumSub;
         voto.hue = Math.abs(value) % 360 + 'deg';
     });
+
+    // Only read books can be rated: the last one is the current book, and candidates have not been read.
+    const isCurrent = dataBooks[dataBooks.length - 1] === book;
+    const isCandidate = candidatos.some((candidate) => normalizeBookTitle(candidate.titulo) === normalizeBookTitle(titulo));
+    const canRate = !isCurrent && !isCandidate;
 
     const details = [
         ['Fecha de publicación', fecha_publicacion],
@@ -154,6 +161,7 @@ const BookPage = () => {
                         </ul>
                     </section>
                 )}
+                {canRate && <RateBook book={book} />}
                 {Array.isArray(preguntas) && preguntas.length > 0 && (
                     <section className="mt-10 w-full max-w-3xl" aria-labelledby="preguntas-title">
                         <h2 id="preguntas-title" className="section-title">Preguntas para la reunión</h2>
