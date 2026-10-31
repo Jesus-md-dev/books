@@ -12,6 +12,7 @@ import "../App.css";
 const LINKS = [
   { to: '/libros', label: 'Lista de libros' },
   { to: '/estadisticas', label: 'Estadísticas' },
+  { to: '/linea-temporal', label: 'Línea temporal' },
   { to: '/socios', label: 'Socios' },
 ];
 

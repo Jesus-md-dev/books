@@ -3,7 +3,7 @@ const SITE_URL = 'https://bahia-lectora.jzmarquez.com';
 const SITE_NAME = 'Bahía Lectora';
 const DEFAULT_DESCRIPTION = 'Bahía Lectora - club de lectura';
 // Public routes of src/App.jsx. /sorteo is a utility page (noindex on the client), so it is left out.
-const STATIC_ROUTES = ['/', '/libros', '/estadisticas', '/socios'];
+const STATIC_ROUTES = ['/', '/libros', '/estadisticas', '/linea-temporal', '/socios'];
 
 function escapeHtml(str) {
   return String(str)

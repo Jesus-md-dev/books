@@ -29,7 +29,7 @@ test('head block cannot be broken out of by the description', () => {
 
 test('sitemap lists static and book routes once, never /admin', () => {
   const xml = buildSitemap([book, book]);
-  assert.equal((xml.match(/<loc>/g) || []).length, 5);
+  assert.equal((xml.match(/<loc>/g) || []).length, 6);
   assert.ok(xml.includes('/libro/G%C3%B3tico'));
   assert.ok(!xml.includes('admin'));
 });

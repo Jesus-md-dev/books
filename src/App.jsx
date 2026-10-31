@@ -14,6 +14,7 @@ const BookPage = lazy(() => import('./pages/BookPage'));
 const DrawBook = lazy(() => import('./pages/DrawBook'));
 const Stats = lazy(() => import('./pages/Stats'));
 const Members = lazy(() => import('./pages/Members'));
+const Timeline = lazy(() => import('./pages/Timeline'));
 
 
 const App = () => {
@@ -30,6 +31,7 @@ const App = () => {
             <Route path="/sorteo" element={<DrawBook />} />
             <Route path="/estadisticas" element={<Stats />} />
             <Route path="/socios" element={<Members />} />
+            <Route path="/linea-temporal" element={<Timeline />} />
             <Route path="*" element={<Navigate to="/" replace />} />
          </Routes>
          </Suspense>

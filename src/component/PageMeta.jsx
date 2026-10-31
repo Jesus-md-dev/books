@@ -10,6 +10,7 @@ const PAGES = {
   '/libros': { title: `Libros · ${SITE}`, description: 'Todos los libros leídos por el club de lectura Bahía Lectora, con sus valoraciones.' },
   '/sorteo': { title: `Sorteo · ${SITE}`, description: 'Sorteo del próximo libro del club de lectura Bahía Lectora.', noindex: true },
   '/estadisticas': { title: `Estadísticas · ${SITE}`, description: 'Estadísticas del club de lectura Bahía Lectora: libros mejor y peor valorados y más.' },
+  '/linea-temporal': { title: `Línea temporal · ${SITE}`, description: 'Todas las lecturas del club de lectura Bahía Lectora en orden, con sus hitos: libros, páginas y mejor valorado.' },
   '/socios': { title: `Socios · ${SITE}`, description: 'Las socias y socios del club de lectura Bahía Lectora y sus libros favoritos.' },
 };
 
